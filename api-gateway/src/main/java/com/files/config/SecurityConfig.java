@@ -1,6 +1,7 @@
 package com.files.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
@@ -24,8 +25,27 @@ public class SecurityConfig {
                 .pathMatchers("/user-service/internal/auth/**").permitAll()
                 .pathMatchers("/user-service/users/admin/**").hasRole("ADMIN")
                 .pathMatchers("/user-service/users/**").authenticated()
-                .pathMatchers("/tickets/**")
-                    .hasAnyRole("USER","AGENT","MANAGER","ADMIN")
+                .pathMatchers("/actuator/**").permitAll()
+
+                // Ticket creation & tracking
+                .pathMatchers(HttpMethod.POST, "/tickets/**").hasRole("USER")
+                .pathMatchers("/tickets/user/**").hasRole("USER")
+
+                // Agent work
+                .pathMatchers("/tickets/agent/**").hasAnyRole("AGENT", "MANAGER")
+                .pathMatchers("/tickets/*/status").hasRole("AGENT")
+                .pathMatchers("/tickets/*/close").hasRole("AGENT")
+
+                // Manager actions
+                .pathMatchers("/tickets/*/assign").hasRole("MANAGER")
+                .pathMatchers("/tickets/*/reopen").hasAnyRole("MANAGER", "ADMIN")
+
+                // Cancel
+                .pathMatchers("/tickets/*/cancel").hasAnyRole("USER", "ADMIN")
+
+                // Reports & dashboards
+                .pathMatchers("/reports/**", "/dashboard/**")
+                    .hasAnyRole("MANAGER", "ADMIN")
                 .anyExchange().authenticated()
             )
             .oauth2ResourceServer(oauth ->
