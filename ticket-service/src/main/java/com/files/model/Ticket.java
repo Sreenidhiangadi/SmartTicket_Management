@@ -1,37 +1,34 @@
 package com.files.model;
-import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 
 @Document(collection = "tickets")
-@Data
+@Getter
+@Setter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class Ticket {
 
     @Id
     private String id;
 
-    @NotBlank
     private String title;
-
-    @NotBlank
     private String description;
 
-    @NotBlank
-    private String status;
+    private TicketCategory category;
+    private TicketPriority priority;
+    private TicketStatus status;
 
-    @NotBlank
-    private String priority;
-
-    private String createdBy;
+    private String createdBy; 
+    private String assignedTo; 
 
     private Instant createdAt;
+    private Instant updatedAt;
+    private Instant resolvedAt;
+    private Instant closedAt;
 }
