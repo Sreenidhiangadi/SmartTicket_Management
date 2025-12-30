@@ -21,12 +21,14 @@ public class SecurityConfig {
         return http
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .authorizeExchange(ex -> ex
-                .pathMatchers("/user-service/auth/**").permitAll()
-                .pathMatchers("/user-service/internal/auth/**").permitAll()
-                .pathMatchers("/user-service/users/admin/**").hasRole("ADMIN")
-                .pathMatchers("/user-service/users/**").authenticated()
-                .pathMatchers("/actuator/**").permitAll()
+            		.pathMatchers("/user-service/users/agents").permitAll()
+            	    .pathMatchers("/user-service/auth/**").permitAll()
+            	    .pathMatchers("/user-service/internal/auth/**").permitAll()
+            	    .pathMatchers("/actuator/**").permitAll()
 
+            	    .pathMatchers("/user-service/users/admin/**").hasRole("ADMIN")
+            	    .pathMatchers("/user-service/users/**").authenticated()
+               
                 
                 .pathMatchers(HttpMethod.POST, "/tickets/**").hasRole("USER")
                 .pathMatchers("/tickets/user/**").hasRole("USER")
