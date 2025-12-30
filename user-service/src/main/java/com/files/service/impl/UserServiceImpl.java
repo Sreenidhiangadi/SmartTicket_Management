@@ -54,4 +54,12 @@ public class UserServiceImpl implements UserService {
             })
             .map(UserResponse::from);
     }
+    
+    @Override
+    public Flux<UserResponse> getActiveAgents() {
+        return repository
+                .findByRolesContainingAndActive("AGENT", true)
+                .map(UserResponse::from);
+    }
+
 }
