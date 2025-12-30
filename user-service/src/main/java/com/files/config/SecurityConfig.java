@@ -40,6 +40,7 @@ public class SecurityConfig {
             .authorizeExchange(ex -> ex
                 .pathMatchers("/auth/**").permitAll()
                 .pathMatchers("/internal/**").permitAll()
+                .pathMatchers("/users/agents").permitAll()
                 .pathMatchers("/users/admin/**").hasRole("ADMIN")
                 .pathMatchers("/users/**").authenticated()
                 .anyExchange().authenticated()
