@@ -40,4 +40,9 @@ public class AdminUserController {
     public Mono<UserResponse> getUserById(@PathVariable String id) {
         return userService.getById(id);
     }
+    @GetMapping("/agents")
+    public Flux<UserResponse> getActiveAgents() {
+        return userService.getActiveAgents();
+    }
+
 }
