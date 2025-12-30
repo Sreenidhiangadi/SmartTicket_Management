@@ -8,6 +8,7 @@ import com.files.model.TicketStatus;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import org.springframework.data.domain.Pageable;
 
 public interface TicketRepository extends ReactiveMongoRepository<Ticket, String> {
 
@@ -22,4 +23,24 @@ public interface TicketRepository extends ReactiveMongoRepository<Ticket, String
     Mono<Long> countByAssignedToIsNull();
     
     Flux<Ticket> findByStatusIn(Iterable<TicketStatus> statuses);
+    
+    Flux<Ticket> findByStatusAndPriority(
+            TicketStatus status,
+            TicketPriority priority,
+            Pageable pageable
+    );
+
+    Flux<Ticket> findByStatus(
+            TicketStatus status,
+            Pageable pageable
+    );
+
+    Flux<Ticket> findByPriority(
+            TicketPriority priority,
+            Pageable pageable
+    );
+
+    Flux<Ticket> findAllBy(Pageable pageable);
+
+    Flux<Ticket> findByAssignedTo(String agentId);
 }
