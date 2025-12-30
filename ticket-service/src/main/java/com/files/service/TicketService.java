@@ -1,6 +1,7 @@
 package com.files.service;
 
 import com.files.dto.CreateTicketRequest;
+import com.files.dto.SlaBreachReport;
 import com.files.dto.TicketResponse;
 import com.files.dto.TimelineItemResponse;
 import com.files.model.TicketPriority;
@@ -31,4 +32,7 @@ public interface TicketService {
     Flux<TicketResponse> getTickets(TicketStatus status,TicketPriority priority,int page,int size);
     
     Flux<TimelineItemResponse> getTimeline(String ticketId);
+    
+    Flux<SlaBreachReport> slaBreaches();
+
 }
