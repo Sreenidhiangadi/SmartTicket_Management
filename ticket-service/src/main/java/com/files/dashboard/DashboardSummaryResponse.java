@@ -10,6 +10,7 @@ public record DashboardSummaryResponse(
         long openTickets,
         long closedTickets,
         long unassignedTickets,
+        long slaBreachedTickets,
         Map<TicketStatus, Long> ticketsByStatus,
         Map<TicketPriority, Long> ticketsByPriority
 ) {}
