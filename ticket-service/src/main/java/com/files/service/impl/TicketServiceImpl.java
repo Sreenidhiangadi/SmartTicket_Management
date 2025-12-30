@@ -1,5 +1,6 @@
 package com.files.service.impl;
 
+import com.files.dto.AutoAssignmentResponse;
 import com.files.dto.CreateTicketRequest;
 import com.files.dto.SlaBreachReport;
 import com.files.dto.TicketResponse;
@@ -15,6 +16,7 @@ import com.files.repository.TicketRepository;
 import com.files.service.TicketCommentService;
 import com.files.service.TicketService;
 import com.files.sla.SlaPolicy;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +26,7 @@ import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 import java.time.Instant;
 import java.util.Comparator;
@@ -38,11 +41,12 @@ public class TicketServiceImpl implements TicketService {
     private final TicketRepository ticketRepository;
     private final TicketHistoryService ticketHistoryService;
     private final TicketCommentService commentService;
+    private final WebClient assignmentWebClient;
 
-  
 
     @Override
     public Mono<TicketResponse> createTicket(CreateTicketRequest request) {
+
         return ReactiveSecurityContextHolder.getContext()
             .map(ctx -> ctx.getAuthentication().getName())
             .flatMap(userId -> {
@@ -73,10 +77,23 @@ public class TicketServiceImpl implements TicketService {
                             userId,
                             "Ticket created (SLA due at " + slaDueAt + ")"
                         ).thenReturn(saved)
+                    )
+                 
+                    .flatMap(saved ->
+                        autoAssignTicket(saved.getId())
+                            .onErrorResume(ex -> {
+                                log.error(
+                                    "Auto-assign failed for ticket {}",
+                                    saved.getId(),
+                                    ex
+                                );
+                                return Mono.just(saved);
+                            })
                     );
             })
             .map(this::toResponse);
     }
+
 
 
     @Override
@@ -333,6 +350,57 @@ public class TicketServiceImpl implements TicketService {
                 )
             );
     }
+    @Override
+    public Mono<Ticket> autoAssignTicket(String ticketId) {
+
+        return ReactiveSecurityContextHolder.getContext()
+            .map(ctx -> (JwtAuthenticationToken) ctx.getAuthentication())
+            .flatMap(jwtAuth -> {
+
+                String bearerToken =
+                        "Bearer " + jwtAuth.getToken().getTokenValue();
+
+                return ticketRepository.findById(ticketId)
+                    .switchIfEmpty(
+                        Mono.error(new IllegalStateException("Ticket not found"))
+                    )
+                    .flatMap(ticket -> {
+
+                        if (ticket.getStatus() == TicketStatus.CLOSED ||
+                            ticket.getStatus() == TicketStatus.CANCELLED) {
+                            return Mono.error(
+                                new IllegalStateException("Ticket cannot be auto-assigned")
+                            );
+                        }
+
+                        return assignmentWebClient
+                            .post()
+                            .uri("/api/assign/auto/{ticketId}", ticketId)
+                            .header("Authorization", bearerToken)
+                            .retrieve()
+                            .bodyToMono(AutoAssignmentResponse.class)
+                            .flatMap(response -> {
+
+                                ticket.setAssignedTo(response.getAgentId());
+                                ticket.setStatus(TicketStatus.ASSIGNED);
+                                ticket.setUpdatedAt(Instant.now());
+
+                                return ticketRepository.save(ticket)
+                                    .flatMap(saved ->
+                                        ticketHistoryService.record(
+                                            saved.getId(),
+                                            TicketHistoryAction.ASSIGNED,
+                                            response.getAgentId(),
+                                            "Ticket auto-assigned to agent " + response.getAgentId()
+                                        ).thenReturn(saved)
+                                    );
+                            });
+                    });
+            });
+    }
+
+
+
 
     // ================= HELPERS =================
     private TimelineItemResponse fromHistory(TicketHistory history) {
