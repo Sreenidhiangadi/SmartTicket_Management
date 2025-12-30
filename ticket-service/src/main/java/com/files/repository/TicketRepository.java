@@ -8,6 +8,10 @@ import com.files.model.TicketStatus;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.Instant;
+import java.util.List;
+
 import org.springframework.data.domain.Pageable;
 
 public interface TicketRepository extends ReactiveMongoRepository<Ticket, String> {
@@ -43,4 +47,12 @@ public interface TicketRepository extends ReactiveMongoRepository<Ticket, String
     Flux<Ticket> findAllBy(Pageable pageable);
 
     Flux<Ticket> findByAssignedTo(String agentId);
+    
+    Flux<Ticket> findBySlaBreachedTrue();
+
+    Flux<Ticket> findBySlaDueAtBeforeAndStatusNotIn(
+            Instant now,
+            List<TicketStatus> excludedStatuses
+    );
+
 }
