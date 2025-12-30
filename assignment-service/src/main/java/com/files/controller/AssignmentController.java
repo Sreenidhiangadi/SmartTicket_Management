@@ -2,6 +2,7 @@ package com.files.controller;
 
 
 import com.files.dto.request.AssignTicketRequest;
+import com.files.dto.response.AutoAssignmentResponse;
 import com.files.mapper.AssignmentMapper;
 import com.files.mapper.EscalationMapper;
 import com.files.repository.EscalationLogRepository;
@@ -47,4 +48,12 @@ public class AssignmentController {
                 .findByEscalatedToManagerId(managerId)
                 .map(EscalationMapper::toResponse);
     }
+    @PostMapping("/auto/{ticketId}")
+    public Mono<AutoAssignmentResponse> autoAssign(
+            @PathVariable String ticketId,
+            @RequestParam(required = false) String priority
+    ) {
+        return assignmentService.autoAssign(ticketId, priority);
+    }
+
 }
