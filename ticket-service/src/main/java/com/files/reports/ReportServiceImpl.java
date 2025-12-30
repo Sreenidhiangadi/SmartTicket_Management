@@ -12,6 +12,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -53,23 +54,21 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public Flux<SlaBreachReport> slaBreaches() {
-        long SLA_MINUTES = 48 * 60;
 
-        return ticketRepository.findByStatusIn(
-                        List.of(TicketStatus.RESOLVED, TicketStatus.CLOSED)
+        return ticketRepository
+            .findBySlaDueAtBeforeAndStatusNotIn(
+                Instant.now(),
+                List.of(TicketStatus.RESOLVED, TicketStatus.CLOSED)
+            )
+            .map(ticket ->
+                new SlaBreachReport(
+                    ticket.getId(),
+                    ticket.getSlaDueAt(),
+                    ticket.getStatus().name()
                 )
-                .filter(t -> t.getResolvedAt() != null)
-                .map(t -> {
-                    long minutes = resolutionMinutes(t);
-                    return new Object[]{t, minutes};
-                })
-                .filter(arr -> (long) arr[1] > SLA_MINUTES)
-                .map(arr -> {
-                    Ticket t = (Ticket) arr[0];
-                    long minutes = (long) arr[1];
-                    return new SlaBreachReport(t.getId(), minutes);
-                });
+            );
     }
+
 
     private long resolutionMinutes(Ticket ticket) {
         return Duration.between(ticket.getCreatedAt(), ticket.getResolvedAt())
