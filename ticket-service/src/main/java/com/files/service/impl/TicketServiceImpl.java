@@ -1,6 +1,7 @@
 package com.files.service.impl;
 
 import com.files.dto.CreateTicketRequest;
+import com.files.dto.SlaBreachReport;
 import com.files.dto.TicketResponse;
 import com.files.dto.TimelineItemResponse;
 import com.files.exception.TicketNotFoundException;
@@ -13,6 +14,8 @@ import com.files.model.TicketStatus;
 import com.files.repository.TicketRepository;
 import com.files.service.TicketCommentService;
 import com.files.service.TicketService;
+import com.files.sla.SlaPolicy;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +27,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -35,39 +39,45 @@ public class TicketServiceImpl implements TicketService {
     private final TicketHistoryService ticketHistoryService;
     private final TicketCommentService commentService;
 
-    // ================= CREATE =================
+  
 
     @Override
     public Mono<TicketResponse> createTicket(CreateTicketRequest request) {
         return ReactiveSecurityContextHolder.getContext()
-                .map(ctx -> ctx.getAuthentication().getName())
-                .flatMap(userId -> {
+            .map(ctx -> ctx.getAuthentication().getName())
+            .flatMap(userId -> {
 
-                    Ticket ticket = Ticket.builder()
-                            .title(request.title())
-                            .description(request.description())
-                            .category(request.category())
-                            .priority(request.priority())
-                            .status(TicketStatus.CREATED)
-                            .createdBy(userId)
-                            .createdAt(Instant.now())
-                            .updatedAt(Instant.now())
-                            .build();
+                Instant now = Instant.now();
+                Instant slaDueAt = now.plus(
+                    SlaPolicy.getDuration(request.priority())
+                );
 
-                    return ticketRepository.save(ticket)
-                            .flatMap(saved ->
-                                    ticketHistoryService.record(
-                                            saved.getId(),
-                                            TicketHistoryAction.CREATED,
-                                            userId,
-                                            "Ticket created"
-                                    ).thenReturn(saved)
-                            );
-                })
-                .map(this::toResponse);
+                Ticket ticket = Ticket.builder()
+                    .title(request.title())
+                    .description(request.description())
+                    .category(request.category())
+                    .priority(request.priority())
+                    .status(TicketStatus.CREATED)
+                    .createdBy(userId)
+                    .createdAt(now)
+                    .updatedAt(now)
+                    .slaDueAt(slaDueAt)
+                    .slaBreached(false)
+                    .build();
+
+                return ticketRepository.save(ticket)
+                    .flatMap(saved ->
+                        ticketHistoryService.record(
+                            saved.getId(),
+                            TicketHistoryAction.CREATED,
+                            userId,
+                            "Ticket created (SLA due at " + slaDueAt + ")"
+                        ).thenReturn(saved)
+                    );
+            })
+            .map(this::toResponse);
     }
 
-    // ================= READ =================
 
     @Override
     public Mono<TicketResponse> getTicketById(String id) {
@@ -88,7 +98,6 @@ public class TicketServiceImpl implements TicketService {
                 .map(this::toResponse);
     }
 
-    // ================= ASSIGN =================
 
     @Override
     public Mono<TicketResponse> assignTicket(String ticketId, String agentId) {
@@ -119,7 +128,6 @@ public class TicketServiceImpl implements TicketService {
                 .map(this::toResponse);
     }
 
-    // ================= STATUS =================
 
     @Override
     public Mono<TicketResponse> updateStatus(String ticketId, TicketStatus newStatus) {
@@ -182,7 +190,7 @@ public class TicketServiceImpl implements TicketService {
         return updateStatus(ticketId, TicketStatus.CLOSED);
     }
 
-    // ================= REOPEN =================
+  
 
     @Override
     public Mono<TicketResponse> reopenTicket(String ticketId) {
@@ -215,7 +223,7 @@ public class TicketServiceImpl implements TicketService {
         );
     }
 
-    // ================= CANCEL =================
+
 
     @Override
     public Mono<TicketResponse> cancelTicket(String ticketId) {
@@ -256,7 +264,7 @@ public class TicketServiceImpl implements TicketService {
         );
     }
 
-    // ================= LIST (FILTER + PAGINATION) =================
+ 
 
     @Override
     public Flux<TicketResponse> getTickets(
@@ -309,6 +317,23 @@ public class TicketServiceImpl implements TicketService {
         return Flux.merge(historyFlux, commentFlux)
                 .sort(Comparator.comparing(TimelineItemResponse::timestamp));
     }
+    @Override
+    public Flux<SlaBreachReport> slaBreaches() {
+
+        return ticketRepository
+            .findBySlaDueAtBeforeAndStatusNotIn(
+                Instant.now(),
+                List.of(TicketStatus.RESOLVED, TicketStatus.CLOSED)
+            )
+            .map(ticket ->
+                new SlaBreachReport(
+                    ticket.getId(),
+                    ticket.getSlaDueAt(),
+                    ticket.getStatus().name()
+                )
+            );
+    }
+
     // ================= HELPERS =================
     private TimelineItemResponse fromHistory(TicketHistory history) {
         return new TimelineItemResponse(
