@@ -6,9 +6,11 @@ import com.files.dto.AddCommentRequest;
 import com.files.dto.CreateTicketRequest;
 import com.files.dto.TicketCommentResponse;
 import com.files.dto.TicketResponse;
+import com.files.dto.TimelineItemResponse;
 import com.files.dto.UpdateTicketStatusRequest;
 import com.files.history.TicketHistory;
 import com.files.history.TicketHistoryService;
+import com.files.model.TicketPriority;
 import com.files.model.TicketStatus;
 import com.files.service.TicketCommentService;
 import com.files.service.TicketService;
@@ -28,7 +30,7 @@ public class TicketController {
     private final TicketHistoryService ticketHistoryService;
     private final TicketCommentService commentService;
     private final DashboardService dashboardService;
-    
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<TicketResponse> createTicket(
@@ -104,5 +106,17 @@ public class TicketController {
     ) {
         return commentService.getComments(ticketId);
     }
-   
+    @GetMapping
+    public Flux<TicketResponse> getTickets(
+            @RequestParam(required = false) TicketStatus status,
+            @RequestParam(required = false) TicketPriority priority,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ticketService.getTickets(status, priority, page, size);
+    }
+    @GetMapping("/{id}/timeline")
+    public Flux<TimelineItemResponse> getTimeline(@PathVariable String id) {
+        return ticketService.getTimeline(id);
+    }
 }
