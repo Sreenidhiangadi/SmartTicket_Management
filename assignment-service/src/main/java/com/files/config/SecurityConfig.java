@@ -33,6 +33,8 @@ public class SecurityConfig {
                 .authorizeExchange(ex -> ex
                         .pathMatchers(HttpMethod.POST, "/api/assign/**")
                         .hasAnyRole("MANAGER", "ADMIN")
+                        .pathMatchers(HttpMethod.POST, "/api/assign/auto/**")
+                        .hasAnyRole("MANAGER", "ADMIN")
 
                         .pathMatchers("/api/escalations/**")
                         .hasAnyRole("MANAGER", "ADMIN")
