@@ -10,6 +10,7 @@ import com.files.dto.TimelineItemResponse;
 import com.files.dto.UpdateTicketStatusRequest;
 import com.files.history.TicketHistory;
 import com.files.history.TicketHistoryService;
+import com.files.model.Ticket;
 import com.files.model.TicketPriority;
 import com.files.model.TicketStatus;
 import com.files.service.TicketCommentService;
@@ -119,4 +120,11 @@ public class TicketController {
     public Flux<TimelineItemResponse> getTimeline(@PathVariable String id) {
         return ticketService.getTimeline(id);
     }
+    @PostMapping("/{ticketId}/auto-assign")
+    public Mono<Ticket> autoAssign(
+            @PathVariable String ticketId
+    ) {
+        return ticketService.autoAssignTicket(ticketId);
+    }
+
 }
