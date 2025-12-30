@@ -34,7 +34,7 @@ public class SecurityConfig {
                     .pathMatchers(HttpMethod.GET, "/tickets/*/history")
                     .hasAnyRole("USER", "AGENT", "MANAGER", "ADMIN")
                     
-                    // User actions
+                    
                     .pathMatchers(HttpMethod.POST, "/tickets").hasRole("USER")
                     .pathMatchers("/tickets/user/**").hasRole("USER")
                     
@@ -44,19 +44,19 @@ public class SecurityConfig {
                 .pathMatchers(HttpMethod.GET, "/tickets/*/comments")
                     .authenticated()
 
-                    // Agent actions
+                   
                     .pathMatchers("/tickets/agent/**").hasAnyRole("AGENT", "MANAGER")
                     .pathMatchers("/tickets/*/status").hasRole("AGENT")
                     .pathMatchers("/tickets/*/close").hasRole("AGENT")
 
-                    // Manager actions
+                   
                     .pathMatchers("/tickets/*/assign").hasRole("MANAGER")
                     .pathMatchers("/tickets/*/reopen").hasAnyRole("MANAGER", "ADMIN")
 
-                    // Cancel
+                    
                     .pathMatchers("/tickets/*/cancel").hasAnyRole("USER", "ADMIN")
+                    .pathMatchers(HttpMethod.GET, "/tickets/*/timeline").authenticated()
 
-                    // Reports & dashboard
                     .pathMatchers("/reports/**", "/dashboard/**")
                         .hasAnyRole("MANAGER", "ADMIN")
 
