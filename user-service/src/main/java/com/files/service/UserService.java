@@ -16,4 +16,7 @@ public interface UserService {
     Mono<UserResponse> updateRoles(String id, Set<Role> roles);
 
     Mono<UserResponse> updateStatus(String id, boolean active);
+    
+    Flux<UserResponse> getActiveAgents();
+
 }
