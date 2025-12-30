@@ -51,6 +51,9 @@ public class SecurityConfig {
 
                    
                     .pathMatchers("/tickets/*/assign").hasRole("MANAGER")
+                    .pathMatchers(HttpMethod.POST, "/tickets/*/auto-assign")
+                    .hasAnyRole("MANAGER")
+
                     .pathMatchers("/tickets/*/reopen").hasAnyRole("MANAGER", "ADMIN")
 
                     
