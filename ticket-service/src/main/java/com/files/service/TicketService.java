@@ -4,6 +4,7 @@ import com.files.dto.CreateTicketRequest;
 import com.files.dto.SlaBreachReport;
 import com.files.dto.TicketResponse;
 import com.files.dto.TimelineItemResponse;
+import com.files.model.Ticket;
 import com.files.model.TicketPriority;
 import com.files.model.TicketStatus;
 import reactor.core.publisher.Flux;
@@ -34,5 +35,7 @@ public interface TicketService {
     Flux<TimelineItemResponse> getTimeline(String ticketId);
     
     Flux<SlaBreachReport> slaBreaches();
+    
+    Mono<Ticket> autoAssignTicket(String ticketId);
 
 }
