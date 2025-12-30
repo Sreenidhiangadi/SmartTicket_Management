@@ -3,15 +3,15 @@ package com.files.service.impl;
 import com.files.dto.CreateTicketRequest;
 import com.files.dto.TicketResponse;
 import com.files.exception.TicketNotFoundException;
+import com.files.history.TicketHistoryAction;
 import com.files.history.TicketHistoryService;
 import com.files.model.Ticket;
 import com.files.model.TicketStatus;
 import com.files.repository.TicketRepository;
 import com.files.service.TicketService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -27,70 +27,92 @@ public class TicketServiceImpl implements TicketService {
     private final TicketRepository ticketRepository;
     private final TicketHistoryService ticketHistoryService;
 
+    // -------------------- CREATE --------------------
 
     @Override
     public Mono<TicketResponse> createTicket(CreateTicketRequest request) {
         return ReactiveSecurityContextHolder.getContext()
             .map(ctx -> ctx.getAuthentication().getName())
             .flatMap(userId -> {
+
                 Ticket ticket = Ticket.builder()
                     .title(request.title())
                     .description(request.description())
                     .category(request.category())
                     .priority(request.priority())
                     .status(TicketStatus.CREATED)
-                    .createdBy(userId)   
+                    .createdBy(userId)
                     .createdAt(Instant.now())
                     .updatedAt(Instant.now())
                     .build();
 
-                return ticketRepository.save(ticket);
+                return ticketRepository.save(ticket)
+                    .flatMap(saved ->
+                        ticketHistoryService.record(
+                            saved.getId(),
+                            TicketHistoryAction.CREATED,
+                            userId,
+                            "Ticket created"
+                        ).thenReturn(saved)
+                    );
             })
             .map(this::toResponse);
     }
 
+    // -------------------- READ --------------------
+
     @Override
     public Mono<TicketResponse> getTicketById(String id) {
         return ticketRepository.findById(id)
-                .switchIfEmpty(Mono.error(new TicketNotFoundException(id)))
-                .map(this::toResponse);
+            .switchIfEmpty(Mono.error(new TicketNotFoundException(id)))
+            .map(this::toResponse);
     }
 
     @Override
     public Flux<TicketResponse> getTicketsByUser(String userId) {
         return ticketRepository.findByCreatedBy(userId)
-                .map(this::toResponse);
+            .map(this::toResponse);
     }
 
     @Override
     public Flux<TicketResponse> getTicketsByStatus(TicketStatus status) {
         return ticketRepository.findByStatus(status)
-                .map(this::toResponse);
+            .map(this::toResponse);
     }
 
+    // -------------------- ASSIGN --------------------
 
     @Override
     public Mono<TicketResponse> assignTicket(String ticketId, String agentId) {
         return ticketRepository.findById(ticketId)
-                .switchIfEmpty(Mono.error(new TicketNotFoundException(ticketId)))
-                .flatMap(ticket -> {
+            .switchIfEmpty(Mono.error(new TicketNotFoundException(ticketId)))
+            .flatMap(ticket -> {
 
-                    if (ticket.getStatus() != TicketStatus.CREATED) {
-                        return Mono.error(new IllegalStateException(
-                                "Only CREATED tickets can be assigned"
-                        ));
-                    }
+                if (ticket.getStatus() != TicketStatus.CREATED) {
+                    return Mono.error(
+                        new IllegalStateException("Only CREATED tickets can be assigned")
+                    );
+                }
 
-                    ticket.setAssignedTo(agentId);
-                    ticket.setStatus(TicketStatus.ASSIGNED);
-                    ticket.setUpdatedAt(Instant.now());
+                ticket.setAssignedTo(agentId);
+                ticket.setStatus(TicketStatus.ASSIGNED);
+                ticket.setUpdatedAt(Instant.now());
 
-                    return ticketRepository.save(ticket);
-                })
-                .map(this::toResponse);
+                return ticketRepository.save(ticket)
+                    .flatMap(saved ->
+                        ticketHistoryService.record(
+                            saved.getId(),
+                            TicketHistoryAction.ASSIGNED,
+                            agentId,
+                            "Ticket assigned to agent " + agentId
+                        ).thenReturn(saved)
+                    );
+            })
+            .map(this::toResponse);
     }
 
-   
+    // -------------------- STATUS CHANGE --------------------
+
     @Override
     public Mono<TicketResponse> updateStatus(String ticketId, TicketStatus newStatus) {
         return withAuthContext((userId, roles) ->
@@ -100,9 +122,9 @@ public class TicketServiceImpl implements TicketService {
 
                     if (ticket.getStatus() == TicketStatus.CLOSED ||
                         ticket.getStatus() == TicketStatus.CANCELLED) {
-                        return Mono.error(new IllegalStateException(
-                                "Closed or Cancelled tickets cannot be updated"
-                        ));
+                        return Mono.error(
+                            new IllegalStateException("Closed or Cancelled tickets cannot be updated")
+                        );
                     }
 
                     if (roles.contains("AGENT") &&
@@ -110,18 +132,22 @@ public class TicketServiceImpl implements TicketService {
                         !roles.contains("ADMIN")) {
 
                         if (!userId.equals(ticket.getAssignedTo())) {
-                            return Mono.error(new IllegalStateException(
-                                    "Agent can update only assigned tickets"
-                            ));
+                            return Mono.error(
+                                new IllegalStateException("Agent can update only assigned tickets")
+                            );
                         }
                     }
 
                     if (!isValidTransition(ticket.getStatus(), newStatus)) {
-                        return Mono.error(new IllegalStateException(
+                        return Mono.error(
+                            new IllegalStateException(
                                 "Invalid status transition: " +
                                 ticket.getStatus() + " → " + newStatus
-                        ));
+                            )
+                        );
                     }
+
+                    TicketStatus oldStatus = ticket.getStatus();
 
                     ticket.setStatus(newStatus);
                     ticket.setUpdatedAt(Instant.now());
@@ -134,38 +160,62 @@ public class TicketServiceImpl implements TicketService {
                         ticket.setClosedAt(Instant.now());
                     }
 
-                    return ticketRepository.save(ticket);
+                    return ticketRepository.save(ticket)
+                        .flatMap(saved ->
+                            ticketHistoryService.record(
+                                saved.getId(),
+                                TicketHistoryAction.STATUS_CHANGED,
+                                userId,
+                                oldStatus + " → " + newStatus
+                            ).thenReturn(saved)
+                        );
                 })
                 .map(this::toResponse)
         );
     }
 
+    // -------------------- CLOSE --------------------
+
     @Override
     public Mono<TicketResponse> closeTicket(String ticketId) {
+        // history is already recorded inside updateStatus
         return updateStatus(ticketId, TicketStatus.CLOSED);
     }
 
+    // -------------------- REOPEN --------------------
 
     @Override
     public Mono<TicketResponse> reopenTicket(String ticketId) {
-        return ticketRepository.findById(ticketId)
+        return withAuthContext((userId, roles) ->
+            ticketRepository.findById(ticketId)
                 .switchIfEmpty(Mono.error(new TicketNotFoundException(ticketId)))
                 .flatMap(ticket -> {
 
                     if (ticket.getStatus() != TicketStatus.RESOLVED &&
                         ticket.getStatus() != TicketStatus.CLOSED) {
-                        return Mono.error(new IllegalStateException(
-                                "Only RESOLVED or CLOSED tickets can be reopened"
-                        ));
+                        return Mono.error(
+                            new IllegalStateException("Only RESOLVED or CLOSED tickets can be reopened")
+                        );
                     }
 
                     ticket.setStatus(TicketStatus.IN_PROGRESS);
                     ticket.setUpdatedAt(Instant.now());
 
-                    return ticketRepository.save(ticket);
+                    return ticketRepository.save(ticket)
+                        .flatMap(saved ->
+                            ticketHistoryService.record(
+                                saved.getId(),
+                                TicketHistoryAction.REOPENED,
+                                userId,
+                                "Ticket reopened"
+                            ).thenReturn(saved)
+                        );
                 })
-                .map(this::toResponse);
+                .map(this::toResponse)
+        );
     }
+
+    // -------------------- CANCEL --------------------
 
     @Override
     public Mono<TicketResponse> cancelTicket(String ticketId) {
@@ -176,30 +226,37 @@ public class TicketServiceImpl implements TicketService {
 
                     if (ticket.getStatus() == TicketStatus.RESOLVED ||
                         ticket.getStatus() == TicketStatus.CLOSED) {
-                        return Mono.error(new IllegalStateException(
-                                "Resolved or Closed tickets cannot be cancelled"
-                        ));
+                        return Mono.error(
+                            new IllegalStateException("Resolved or Closed tickets cannot be cancelled")
+                        );
                     }
 
-                    // USER ownership rule
                     if (roles.contains("USER") && !roles.contains("ADMIN")) {
                         if (!userId.equals(ticket.getCreatedBy())) {
-                            return Mono.error(new IllegalStateException(
-                                    "User can cancel only their own ticket"
-                            ));
+                            return Mono.error(
+                                new IllegalStateException("User can cancel only their own ticket")
+                            );
                         }
                     }
 
                     ticket.setStatus(TicketStatus.CANCELLED);
                     ticket.setUpdatedAt(Instant.now());
 
-                    return ticketRepository.save(ticket);
+                    return ticketRepository.save(ticket)
+                        .flatMap(saved ->
+                            ticketHistoryService.record(
+                                saved.getId(),
+                                TicketHistoryAction.CANCELLED,
+                                userId,
+                                "Ticket cancelled"
+                            ).thenReturn(saved)
+                        );
                 })
                 .map(this::toResponse)
         );
     }
 
- 
+    // -------------------- HELPERS --------------------
 
     private boolean isValidTransition(TicketStatus from, TicketStatus to) {
         return switch (from) {
@@ -231,21 +288,20 @@ public class TicketServiceImpl implements TicketService {
             });
     }
 
-
     private TicketResponse toResponse(Ticket ticket) {
         return new TicketResponse(
-                ticket.getId(),
-                ticket.getTitle(),
-                ticket.getDescription(),
-                ticket.getCategory(),
-                ticket.getPriority(),
-                ticket.getStatus(),
-                ticket.getCreatedBy(),
-                ticket.getAssignedTo(),
-                ticket.getCreatedAt(),
-                ticket.getUpdatedAt(),
-                ticket.getResolvedAt(),
-                ticket.getClosedAt()
+            ticket.getId(),
+            ticket.getTitle(),
+            ticket.getDescription(),
+            ticket.getCategory(),
+            ticket.getPriority(),
+            ticket.getStatus(),
+            ticket.getCreatedBy(),
+            ticket.getAssignedTo(),
+            ticket.getCreatedAt(),
+            ticket.getUpdatedAt(),
+            ticket.getResolvedAt(),
+            ticket.getClosedAt()
         );
     }
 
