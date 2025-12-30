@@ -1,9 +1,16 @@
 package com.files.controller;
 
+import com.files.dashboard.DashboardService;
+import com.files.dashboard.DashboardSummaryResponse;
+import com.files.dto.AddCommentRequest;
 import com.files.dto.CreateTicketRequest;
+import com.files.dto.TicketCommentResponse;
 import com.files.dto.TicketResponse;
 import com.files.dto.UpdateTicketStatusRequest;
+import com.files.history.TicketHistory;
+import com.files.history.TicketHistoryService;
 import com.files.model.TicketStatus;
+import com.files.service.TicketCommentService;
 import com.files.service.TicketService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +25,10 @@ import reactor.core.publisher.Mono;
 public class TicketController {
 
     private final TicketService ticketService;
-
-
+    private final TicketHistoryService ticketHistoryService;
+    private final TicketCommentService commentService;
+    private final DashboardService dashboardService;
+    
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<TicketResponse> createTicket(
@@ -77,4 +86,23 @@ public class TicketController {
     public Mono<TicketResponse> cancelTicket(@PathVariable String id) {
         return ticketService.cancelTicket(id);
     }
+    @GetMapping("/{id}/history")
+    public Flux<TicketHistory> getTicketHistory(@PathVariable String id) {
+        return ticketHistoryService.getHistory(id);
+    }
+    @PostMapping("/{ticketId}/comments")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Mono<TicketCommentResponse> addComment(
+            @PathVariable String ticketId,
+            @Valid @RequestBody AddCommentRequest request
+    ) {
+        return commentService.addComment(ticketId, request);
+    }
+    @GetMapping("/{ticketId}/comments")
+    public Flux<TicketCommentResponse> getComments(
+            @PathVariable String ticketId
+    ) {
+        return commentService.getComments(ticketId);
+    }
+   
 }
