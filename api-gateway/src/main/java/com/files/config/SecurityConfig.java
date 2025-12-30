@@ -27,9 +27,10 @@ public class SecurityConfig {
                 .pathMatchers("/user-service/users/**").authenticated()
                 .pathMatchers("/actuator/**").permitAll()
 
-                // Ticket creation & tracking
+                
                 .pathMatchers(HttpMethod.POST, "/tickets/**").hasRole("USER")
                 .pathMatchers("/tickets/user/**").hasRole("USER")
+
                 
                 .pathMatchers(HttpMethod.GET, "/tickets/*/history")
                 .hasAnyRole("USER", "AGENT", "MANAGER", "ADMIN")
@@ -40,19 +41,19 @@ public class SecurityConfig {
             .pathMatchers(HttpMethod.GET, "/tickets/*/comments")
                 .authenticated()
 
-                // Agent work
+                
                 .pathMatchers("/tickets/agent/**").hasAnyRole("AGENT", "MANAGER")
                 .pathMatchers("/tickets/*/status").hasRole("AGENT")
                 .pathMatchers("/tickets/*/close").hasRole("AGENT")
 
-                // Manager actions
+              
                 .pathMatchers("/tickets/*/assign").hasRole("MANAGER")
                 .pathMatchers("/tickets/*/reopen").hasAnyRole("MANAGER", "ADMIN")
 
-                // Cancel
+                
                 .pathMatchers("/tickets/*/cancel").hasAnyRole("USER", "ADMIN")
 
-                // Reports & dashboards
+                
                 .pathMatchers("/reports/**", "/dashboard/**")
                     .hasAnyRole("MANAGER", "ADMIN")
                 .anyExchange().authenticated()
