@@ -30,10 +30,19 @@ public class SecurityConfig {
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .authorizeExchange(exchange -> exchange
                     .pathMatchers("/actuator/**").permitAll()
-
+                    
+                    .pathMatchers(HttpMethod.GET, "/tickets/*/history")
+                    .hasAnyRole("USER", "AGENT", "MANAGER", "ADMIN")
+                    
                     // User actions
                     .pathMatchers(HttpMethod.POST, "/tickets").hasRole("USER")
                     .pathMatchers("/tickets/user/**").hasRole("USER")
+                    
+                    .pathMatchers(HttpMethod.POST, "/tickets/*/comments")
+                    .hasAnyRole("USER", "AGENT", "MANAGER", "ADMIN")
+
+                .pathMatchers(HttpMethod.GET, "/tickets/*/comments")
+                    .authenticated()
 
                     // Agent actions
                     .pathMatchers("/tickets/agent/**").hasAnyRole("AGENT", "MANAGER")
