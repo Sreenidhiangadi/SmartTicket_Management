@@ -9,6 +9,8 @@ import com.files.exception.TicketNotFoundException;
 import com.files.history.TicketHistory;
 import com.files.history.TicketHistoryAction;
 import com.files.history.TicketHistoryService;
+import com.files.messaging.TicketCreatedEvent;
+import com.files.messaging.TicketStatusChangedEvent;
 import com.files.model.Ticket;
 import com.files.model.TicketPriority;
 import com.files.model.TicketStatus;
@@ -17,10 +19,12 @@ import com.files.service.TicketCommentService;
 import com.files.service.TicketService;
 import com.files.sla.SlaPolicy;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -44,7 +48,7 @@ public class TicketServiceImpl implements TicketService {
     private final TicketHistoryService ticketHistoryService;
     private final TicketCommentService commentService;
     private final WebClient assignmentWebClient;
-
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
 //    @Override
 //    public Mono<TicketResponse> createTicket(CreateTicketRequest request) {
@@ -102,8 +106,9 @@ public class TicketServiceImpl implements TicketService {
         return ReactiveSecurityContextHolder.getContext()
             .map(ctx -> (JwtAuthenticationToken) ctx.getAuthentication())
             .flatMap(jwtAuth -> {
-
+            	Jwt jwt = jwtAuth.getToken();
                 String userId = jwtAuth.getName();
+                String email = jwt.getClaimAsString("email");
                 String bearerToken = "Bearer " + jwtAuth.getToken().getTokenValue();
 
                 Instant now = Instant.now();
@@ -118,6 +123,7 @@ public class TicketServiceImpl implements TicketService {
                     .priority(request.priority())
                     .status(TicketStatus.CREATED)
                     .createdBy(userId)
+                    .createdByEmail(email) 
                     .createdAt(now)
                     .updatedAt(now)
                     .slaDueAt(slaDueAt)
@@ -125,6 +131,19 @@ public class TicketServiceImpl implements TicketService {
                     .build();
 
                 return ticketRepository.save(ticket)
+                		.doOnSuccess(saved -> {
+                	        TicketCreatedEvent event = new TicketCreatedEvent();
+                	        event.setTicketId(saved.getId());
+                	        event.setCreatedByUserId(saved.getCreatedBy());
+                	        event.setCreatedByEmail(email); 
+                	        event.setTitle(saved.getTitle());
+
+                	        kafkaTemplate.send(
+                	            "ticket-created-events",
+                	            saved.getId(),
+                	            event
+                	        );
+                	    })
                     .flatMap(saved ->
                         ticketHistoryService.record(
                             saved.getId(),
@@ -133,7 +152,7 @@ public class TicketServiceImpl implements TicketService {
                             "Ticket created (SLA due at " + slaDueAt + ")"
                         ).thenReturn(saved)
                     )
-                    // 🔥 AUTO-ASSIGN IMMEDIATELY AFTER CREATION
+                  
                     .flatMap(saved ->
                         assignmentWebClient
                             .post()
@@ -156,7 +175,7 @@ public class TicketServiceImpl implements TicketService {
                                         ).thenReturn(updated)
                                     );
                             })
-                            // If assignment fails, still return CREATED ticket
+                         
                             .onErrorResume(ex -> {
                                 log.error("Auto-assign failed for ticket {}", saved.getId(), ex);
                                 return Mono.just(saved);
@@ -217,60 +236,159 @@ public class TicketServiceImpl implements TicketService {
     }
 
 
+//    @Override
+//    public Mono<TicketResponse> updateStatus(String ticketId, TicketStatus newStatus) {
+//        return withAuthContextMono((userId, roles) ->
+//                ticketRepository.findById(ticketId)
+//                        .switchIfEmpty(Mono.error(new TicketNotFoundException(ticketId)))
+//                        .flatMap(ticket -> {
+//
+//                            if (ticket.getStatus() == TicketStatus.CLOSED ||
+//                                ticket.getStatus() == TicketStatus.CANCELLED) {
+//                                return Mono.error(new IllegalStateException(
+//                                        "Closed or Cancelled tickets cannot be updated"
+//                                ));
+//                            }
+//
+//                            if (roles.contains("AGENT") &&
+//                                !roles.contains("MANAGER") &&
+//                                !roles.contains("ADMIN") &&
+//                                !userId.equals(ticket.getAssignedTo())) {
+//                                return Mono.error(new IllegalStateException(
+//                                        "Agent can update only assigned tickets"
+//                                ));
+//                            }
+//
+//                            if (!isValidTransition(ticket.getStatus(), newStatus)) {
+//                                return Mono.error(new IllegalStateException(
+//                                        "Invalid status transition: " +
+//                                                ticket.getStatus() + " → " + newStatus
+//                                ));
+//                            }
+//
+//                            TicketStatus oldStatus = ticket.getStatus();
+//
+//                            ticket.setStatus(newStatus);
+//                            ticket.setUpdatedAt(Instant.now());
+//
+//                            if (newStatus == TicketStatus.RESOLVED) {
+//                                ticket.setResolvedAt(Instant.now());
+//                            }
+//                            if (newStatus == TicketStatus.CLOSED) {
+//                                ticket.setClosedAt(Instant.now());
+//                            }
+//
+//                            return ticketRepository.save(ticket)
+//                            		 .doOnSuccess(saved -> {
+//                            		        TicketStatusChangedEvent event =
+//                            		                new TicketStatusChangedEvent();
+//
+//                            		        event.setTicketId(saved.getId());
+//                            		        event.setUserId(userId);
+//                            		        event.setUserEmail(email); 
+//                            		        event.setOldStatus(oldStatus.name());
+//                            		        event.setNewStatus(saved.getStatus().name());
+//
+//                            		        kafkaTemplate.send(
+//                            		            "ticket-status-events",
+//                            		            saved.getId(),
+//                            		            event
+//                            		        );
+//                            		    })
+//                                    .flatMap(saved ->
+//                                            ticketHistoryService.record(
+//                                                    saved.getId(),
+//                                                    TicketHistoryAction.STATUS_CHANGED,
+//                                                    userId,
+//                                                    oldStatus + " → " + newStatus
+//                                            ).thenReturn(saved)
+//                                    );
+//                        })
+//                        .map(this::toResponse)
+//        );
+//    }
     @Override
     public Mono<TicketResponse> updateStatus(String ticketId, TicketStatus newStatus) {
-        return withAuthContextMono((userId, roles) ->
-                ticketRepository.findById(ticketId)
-                        .switchIfEmpty(Mono.error(new TicketNotFoundException(ticketId)))
-                        .flatMap(ticket -> {
 
-                            if (ticket.getStatus() == TicketStatus.CLOSED ||
-                                ticket.getStatus() == TicketStatus.CANCELLED) {
-                                return Mono.error(new IllegalStateException(
-                                        "Closed or Cancelled tickets cannot be updated"
-                                ));
-                            }
+        return ReactiveSecurityContextHolder.getContext()
+            .map(ctx -> (JwtAuthenticationToken) ctx.getAuthentication())
+            .flatMap(jwtAuth -> {
 
-                            if (roles.contains("AGENT") &&
-                                !roles.contains("MANAGER") &&
-                                !roles.contains("ADMIN") &&
-                                !userId.equals(ticket.getAssignedTo())) {
-                                return Mono.error(new IllegalStateException(
-                                        "Agent can update only assigned tickets"
-                                ));
-                            }
+                String userId = jwtAuth.getName();
 
-                            if (!isValidTransition(ticket.getStatus(), newStatus)) {
-                                return Mono.error(new IllegalStateException(
-                                        "Invalid status transition: " +
-                                                ticket.getStatus() + " → " + newStatus
-                                ));
-                            }
+                Set<String> roles = jwtAuth.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .map(r -> r.replace("ROLE_", ""))
+                        .collect(Collectors.toSet());
 
-                            TicketStatus oldStatus = ticket.getStatus();
+                return ticketRepository.findById(ticketId)
+                    .switchIfEmpty(Mono.error(new TicketNotFoundException(ticketId)))
+                    .flatMap(ticket -> {
 
-                            ticket.setStatus(newStatus);
-                            ticket.setUpdatedAt(Instant.now());
+                        if (ticket.getStatus() == TicketStatus.CLOSED ||
+                            ticket.getStatus() == TicketStatus.CANCELLED) {
+                            return Mono.error(new IllegalStateException(
+                                    "Closed or Cancelled tickets cannot be updated"
+                            ));
+                        }
 
-                            if (newStatus == TicketStatus.RESOLVED) {
-                                ticket.setResolvedAt(Instant.now());
-                            }
-                            if (newStatus == TicketStatus.CLOSED) {
-                                ticket.setClosedAt(Instant.now());
-                            }
+                        if (roles.contains("AGENT") &&
+                            !roles.contains("MANAGER") &&
+                            !roles.contains("ADMIN") &&
+                            !userId.equals(ticket.getAssignedTo())) {
+                            return Mono.error(new IllegalStateException(
+                                    "Agent can update only assigned tickets"
+                            ));
+                        }
 
-                            return ticketRepository.save(ticket)
-                                    .flatMap(saved ->
-                                            ticketHistoryService.record(
-                                                    saved.getId(),
-                                                    TicketHistoryAction.STATUS_CHANGED,
-                                                    userId,
-                                                    oldStatus + " → " + newStatus
-                                            ).thenReturn(saved)
-                                    );
-                        })
-                        .map(this::toResponse)
-        );
+                        if (!isValidTransition(ticket.getStatus(), newStatus)) {
+                            return Mono.error(new IllegalStateException(
+                                    "Invalid status transition: " +
+                                            ticket.getStatus() + " → " + newStatus
+                            ));
+                        }
+
+                        TicketStatus oldStatus = ticket.getStatus();
+
+                        ticket.setStatus(newStatus);
+                        ticket.setUpdatedAt(Instant.now());
+
+                        if (newStatus == TicketStatus.RESOLVED) {
+                            ticket.setResolvedAt(Instant.now());
+                        }
+                        if (newStatus == TicketStatus.CLOSED) {
+                            ticket.setClosedAt(Instant.now());
+                        }
+
+                        return ticketRepository.save(ticket)
+                            .doOnSuccess(saved -> {
+
+                                TicketStatusChangedEvent event =
+                                        new TicketStatusChangedEvent();
+
+                                event.setTicketId(saved.getId());
+                                event.setUserId(userId);
+                                event.setUserEmail(saved.getCreatedByEmail()); 
+                                event.setOldStatus(oldStatus.name());
+                                event.setNewStatus(saved.getStatus().name());
+
+                                kafkaTemplate.send(
+                                    "ticket-status-events",
+                                    saved.getId(),
+                                    event
+                                );
+                            })
+                            .flatMap(saved ->
+                                ticketHistoryService.record(
+                                    saved.getId(),
+                                    TicketHistoryAction.STATUS_CHANGED,
+                                    userId,
+                                    oldStatus + " → " + newStatus
+                                ).thenReturn(saved)
+                            );
+                    })
+                    .map(this::toResponse);
+            });
     }
 
     @Override
@@ -421,6 +539,55 @@ public class TicketServiceImpl implements TicketService {
                 )
             );
     }
+//    @Override
+//    public Mono<Ticket> autoAssignTicket(String ticketId) {
+//
+//        return ReactiveSecurityContextHolder.getContext()
+//            .map(ctx -> (JwtAuthenticationToken) ctx.getAuthentication())
+//            .flatMap(jwtAuth -> {
+//
+//                String bearerToken =
+//                        "Bearer " + jwtAuth.getToken().getTokenValue();
+//
+//                return ticketRepository.findById(ticketId)
+//                    .switchIfEmpty(
+//                        Mono.error(new IllegalStateException("Ticket not found"))
+//                    )
+//                    .flatMap(ticket -> {
+//
+//                        if (ticket.getStatus() == TicketStatus.CLOSED ||
+//                            ticket.getStatus() == TicketStatus.CANCELLED) {
+//                            return Mono.error(
+//                                new IllegalStateException("Ticket cannot be auto-assigned")
+//                            );
+//                        }
+//                        log.info("Calling Assignment Service auto-assign for ticket {}", ticketId);
+//                        return assignmentWebClient
+//                            .post()
+//                            .uri("/api/assign/auto/{ticketId}", ticketId)
+//                            .header("Authorization", bearerToken)
+//                            .retrieve()
+//                            .bodyToMono(AutoAssignmentResponse.class)
+//                            .flatMap(response -> {
+//
+//                                ticket.setAssignedTo(response.getAgentId());
+//                                ticket.setStatus(TicketStatus.ASSIGNED);
+//                                ticket.setUpdatedAt(Instant.now());
+//
+//                                return ticketRepository.save(ticket)
+//                                    .flatMap(saved ->
+//                                        ticketHistoryService.record(
+//                                            saved.getId(),
+//                                            TicketHistoryAction.ASSIGNED,
+//                                            response.getAgentId(),
+//                                            "Ticket auto-assigned to agent " + response.getAgentId()
+//                                        ).thenReturn(saved)
+//                                    );
+//                            });
+//                    });
+//            });
+//    }
+//
     @Override
     public Mono<Ticket> autoAssignTicket(String ticketId) {
 
@@ -437,18 +604,50 @@ public class TicketServiceImpl implements TicketService {
                     )
                     .flatMap(ticket -> {
 
-                        if (ticket.getStatus() == TicketStatus.CLOSED ||
-                            ticket.getStatus() == TicketStatus.CANCELLED) {
+                        if (ticket.getStatus() != TicketStatus.CREATED) {
                             return Mono.error(
-                                new IllegalStateException("Ticket cannot be auto-assigned")
+                                new IllegalStateException(
+                                    "Only CREATED tickets can be auto-assigned"
+                                )
                             );
                         }
-                        log.info("Calling Assignment Service auto-assign for ticket {}", ticketId);
+
+                        if (ticket.getAssignedTo() != null) {
+                            log.info(
+                                "Ticket {} already assigned to {}, skipping auto-assign",
+                                ticketId,
+                                ticket.getAssignedTo()
+                            );
+                            return Mono.just(ticket);
+                        }
+
+                        log.info(
+                            "Calling Assignment Service auto-assign for ticket {}",
+                            ticketId
+                        );
+
                         return assignmentWebClient
                             .post()
                             .uri("/api/assign/auto/{ticketId}", ticketId)
                             .header("Authorization", bearerToken)
                             .retrieve()
+                            .onStatus(
+                                status -> status.is4xxClientError() || status.is5xxServerError(),
+                                response ->
+                                    response.bodyToMono(String.class)
+                                        .flatMap(body -> {
+                                            log.error(
+                                                "Auto-assign failed for ticket {}: {}",
+                                                ticketId,
+                                                body
+                                            );
+                                            return Mono.error(
+                                                new IllegalStateException(
+                                                    "Auto-assign service failed"
+                                                )
+                                            );
+                                        })
+                            )
                             .bodyToMono(AutoAssignmentResponse.class)
                             .flatMap(response -> {
 
@@ -462,14 +661,14 @@ public class TicketServiceImpl implements TicketService {
                                             saved.getId(),
                                             TicketHistoryAction.ASSIGNED,
                                             response.getAgentId(),
-                                            "Ticket auto-assigned to agent " + response.getAgentId()
+                                            "Ticket auto-assigned to agent " +
+                                                response.getAgentId()
                                         ).thenReturn(saved)
                                     );
                             });
                     });
             });
     }
-
 
 
 
