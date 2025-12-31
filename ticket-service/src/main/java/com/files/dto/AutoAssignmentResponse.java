@@ -10,4 +10,6 @@ public class AutoAssignmentResponse {
     private String agentId;
     private String priority;
     private Instant slaDueAt;
+    private String agentEmail;
+
 }
