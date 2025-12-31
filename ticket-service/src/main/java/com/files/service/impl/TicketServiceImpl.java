@@ -9,6 +9,7 @@ import com.files.exception.TicketNotFoundException;
 import com.files.history.TicketHistory;
 import com.files.history.TicketHistoryAction;
 import com.files.history.TicketHistoryService;
+import com.files.messaging.TicketAssignedEvent;
 import com.files.messaging.TicketCreatedEvent;
 import com.files.messaging.TicketStatusChangedEvent;
 import com.files.model.Ticket;
@@ -166,6 +167,20 @@ public class TicketServiceImpl implements TicketService {
                                 saved.setUpdatedAt(Instant.now());
 
                                 return ticketRepository.save(saved)
+                                		 .doOnSuccess(updated -> {
+
+                                	            TicketAssignedEvent event = new TicketAssignedEvent();
+                                	            event.setTicketId(updated.getId());
+                                	            event.setAgentId(updated.getAssignedTo());
+                                	            event.setAgentEmail(resp.getAgentEmail()); 
+                                	            event.setAssignedAt(Instant.now());
+
+                                	            kafkaTemplate.send(
+                                	                "ticket-assigned-events",
+                                	                updated.getId(),
+                                	                event
+                                	            );
+                                	        })
                                     .flatMap(updated ->
                                         ticketHistoryService.record(
                                             updated.getId(),
