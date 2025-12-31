@@ -24,8 +24,9 @@ public class Ticket {
     private TicketPriority priority;
     private TicketStatus status;
 
-    private String createdBy; 
+    private String createdBy;
     private String assignedTo; 
+    private String createdByEmail;
 
     private Instant createdAt;
     private Instant updatedAt;
