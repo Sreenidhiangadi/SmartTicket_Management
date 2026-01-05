@@ -8,7 +8,8 @@ import java.util.Map;
 public class SlaPolicy {
 
     private static final Map<TicketPriority, Duration> SLA_MAP = Map.of(
-        TicketPriority.HIGH, Duration.ofHours(4),
+        TicketPriority.CRITICAL,Duration.ofHours(1),
+    	TicketPriority.HIGH, Duration.ofHours(4),
         TicketPriority.MEDIUM, Duration.ofHours(8),
         TicketPriority.LOW, Duration.ofHours(24)
     );

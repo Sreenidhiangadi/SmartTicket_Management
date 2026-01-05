@@ -12,7 +12,12 @@ import com.files.service.AgentClientService;
 import com.files.service.AssignmentService;
 import com.files.util.SlaPolicyCalculator;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
@@ -27,6 +32,7 @@ public class AssignmentServiceImpl implements AssignmentService {
     private final AssignmentRepository assignmentRepository;
     private final EscalationLogRepository escalationLogRepository;
     private final AgentClientService agentClientService;
+    private final WebClient ticketWebClient;
 
     @Override
     public Mono<Assignment> assignTicket(
@@ -147,29 +153,38 @@ public class AssignmentServiceImpl implements AssignmentService {
             }));
     }
 
-
     @Override
-    public Mono<Assignment> escalate(
-            Assignment assignment,
-            String reason
-    ) {
+    public Mono<Assignment> escalate(Assignment assignment, String reason) {
 
-        assignment.setEscalated(true);
+        return ReactiveSecurityContextHolder.getContext()
+            .map(ctx -> (JwtAuthenticationToken) ctx.getAuthentication())
+            .flatMap(auth -> {
 
-        EscalationLog log = EscalationLog.builder()
-                .ticketId(assignment.getTicketId())
-                .agentId(assignment.getAgentId())
-                .escalatedToManagerId("AUTO_MANAGER")
-                .reason(reason)
-                .escalatedAt(Instant.now())
-                .build();
+                String bearerToken =
+                    "Bearer " + auth.getToken().getTokenValue();
 
-        return assignmentRepository.save(assignment)
-                .then(escalationLogRepository.save(log))
-                .thenReturn(assignment);
+                assignment.setEscalated(true);
+
+                EscalationLog log = EscalationLog.builder()
+                    .ticketId(assignment.getTicketId())
+                    .agentId(assignment.getAgentId())
+                    .escalatedToManagerId("AUTO_MANAGER")
+                    .reason(reason)
+                    .escalatedAt(Instant.now())
+                    .build();
+
+                return assignmentRepository.save(assignment)
+                    .then(
+                        ticketWebClient
+                            .put()
+                            .uri("/tickets/{id}/sla-breached", assignment.getTicketId())
+                            .header("Authorization", bearerToken)
+                            .retrieve()
+                            .bodyToMono(Void.class)
+                    )
+                    .then(escalationLogRepository.save(log))
+                    .thenReturn(assignment);
+            });
     }
-
-
-   
 
 }

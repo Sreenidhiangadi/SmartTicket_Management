@@ -25,12 +25,21 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BusinessException.class)
-    public Mono<ResponseEntity<String>> handleBusiness(BusinessException ex) {
-        return Mono.just(ResponseEntity.badRequest().body(ex.getMessage()));
+    public Mono<ResponseEntity<Map<String, Object>>> handleBusiness(BusinessException ex) {
+        return Mono.just(
+            ResponseEntity.badRequest().body(
+                Map.of("message", ex.getMessage())
+            )
+        );
     }
 
     @ExceptionHandler(NotFoundException.class)
-    public Mono<ResponseEntity<String>> handleNotFound(NotFoundException ex) {
-        return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage()));
+    public Mono<ResponseEntity<Map<String, Object>>> handleNotFound(NotFoundException ex) {
+        return Mono.just(
+            ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                Map.of("message", ex.getMessage())
+            )
+        );
     }
+
 }

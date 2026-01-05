@@ -43,7 +43,6 @@ public class TicketCommentServiceImpl implements TicketCommentService {
                     .switchIfEmpty(Mono.error(new TicketNotFoundException(ticketId)))
                     .flatMap(ticket -> {
 
-                        // USER can comment only on own ticket
                         if (roles.contains("USER") &&
                             !roles.contains("ADMIN") &&
                             !userId.equals(ticket.getCreatedBy())) {

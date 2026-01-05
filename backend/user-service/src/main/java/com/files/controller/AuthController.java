@@ -6,6 +6,10 @@ import com.files.repository.UserRepository;
 import com.files.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
@@ -20,9 +24,24 @@ public class AuthController {
     private final UserRepository userRepository;
 
     @PostMapping("/register")
-    public Mono<UserResponse> register(
+    public Mono<ResponseEntity<Map<String, Object>>> register(
             @Valid @RequestBody RegisterRequest request) {
-        return authService.register(request);
+
+        return authService.register(request)
+            .map(user -> ResponseEntity.ok(
+            		 Map.<String, Object>of(
+            	                "message", "User registered successfully with id: " + user.getId()
+            	            )
+            ))
+            .onErrorResume(IllegalArgumentException.class, ex ->
+                Mono.just(
+                    ResponseEntity.badRequest().body(
+                        Map.<String, Object>of(
+                            "message", ex.getMessage()
+                        )
+                    )
+                )
+            );
     }
 
     

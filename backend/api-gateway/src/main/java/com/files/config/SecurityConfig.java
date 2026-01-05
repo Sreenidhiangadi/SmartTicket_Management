@@ -81,7 +81,7 @@ public class SecurityConfig {
 
             .pathMatchers("/assignment-service/api/sla/**")
                 .hasRole("ADMIN")
-                .pathMatchers("/notification-service/notifications/**")
+            .pathMatchers("/notification-service/notifications/**")
                 .authenticated()
 
                 .pathMatchers("/reports/**", "/dashboard/**")

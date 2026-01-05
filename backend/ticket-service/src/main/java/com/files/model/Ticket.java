@@ -33,6 +33,6 @@ public class Ticket {
     private Instant resolvedAt;
     private Instant closedAt;
     private Instant slaDueAt;
-    private Boolean slaBreached;
+    private boolean slaBreached;
 
 }

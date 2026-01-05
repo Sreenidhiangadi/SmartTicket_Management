@@ -42,12 +42,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Mono<UserResponse> register(RegisterRequest request) {
 
-        if (!PUBLIC_ROLES.contains(request.getRole())) {
-            return Mono.<UserResponse>error(
-                new BusinessException("Invalid role selection")
-            );
-        }
-
         return repo.existsByEmail(request.getEmail())
             .flatMap(exists -> exists
                 ? Mono.<UserResponse>error(
@@ -58,7 +52,7 @@ public class AuthServiceImpl implements AuthService {
                         .name(request.getName())
                         .email(request.getEmail())
                         .password(encoder.encode(request.getPassword()))
-                        .roles(Set.of(request.getRole()))
+                        .roles(Set.of(Role.USER))
                         .active(true)
                         .build()
                   ).map(u -> UserResponse.from(u))
@@ -67,14 +61,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public Mono<UserResponse> registerAdmin(RegisterRequest request) {
-
-        if (request.getRole() != Role.ADMIN) {
-            return Mono.error(
-                new BusinessException("Only ADMIN role allowed here")
-            );
-        }
-
-        return repo.existsByEmail(request.getEmail())
+  return repo.existsByEmail(request.getEmail())
             .flatMap(exists -> exists
                 ? Mono.error(new BusinessException("Email already exists"))
                 : repo.save(

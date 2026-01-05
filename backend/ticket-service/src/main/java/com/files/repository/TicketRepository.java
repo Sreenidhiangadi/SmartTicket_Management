@@ -25,7 +25,7 @@ public interface TicketRepository extends ReactiveMongoRepository<Ticket, String
     Mono<Long> countByPriority(TicketPriority priority);
 
     Mono<Long> countByAssignedToIsNull();
-    
+
     Flux<Ticket> findByStatusIn(Iterable<TicketStatus> statuses);
     
     Flux<Ticket> findByStatusAndPriority(

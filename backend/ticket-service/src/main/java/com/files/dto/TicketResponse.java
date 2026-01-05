@@ -15,5 +15,8 @@ public record TicketResponse(
         Instant createdAt,
         Instant updatedAt,
         Instant resolvedAt,
-        Instant closedAt
+        Instant closedAt,
+        Instant slaDueAt,
+        boolean slaBreached
+        
 ) {}

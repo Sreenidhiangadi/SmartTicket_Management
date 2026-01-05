@@ -17,7 +17,9 @@ public interface TicketService {
     Mono<TicketResponse> getTicketById(String id);
 
     Flux<TicketResponse> getTicketsByUser(String userId);
-
+    
+    Flux<TicketResponse> getTicketsByAgent(String agentId);
+    
     Flux<TicketResponse> getTicketsByStatus(TicketStatus status);
 
     Mono<TicketResponse> assignTicket(String ticketId, String agentId);
@@ -36,6 +38,8 @@ public interface TicketService {
     
     Flux<SlaBreachReport> slaBreaches();
     
+    Mono<Void> markSlaBreached(String ticketId);
+
     Mono<Ticket> autoAssignTicket(String ticketId);
 
 }

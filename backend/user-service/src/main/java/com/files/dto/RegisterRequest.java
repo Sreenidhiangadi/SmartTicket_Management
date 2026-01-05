@@ -23,7 +23,7 @@ public class RegisterRequest {
     @Size(min = 8, max = 20)
     private String password;
     
-    @NotNull
-    private Role role;
+//    @NotNull
+//    private Role role;
     
 }

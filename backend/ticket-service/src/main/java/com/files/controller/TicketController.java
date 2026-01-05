@@ -50,6 +50,12 @@ public class TicketController {
     public Flux<TicketResponse> getTicketsByUser(@PathVariable String userId) {
         return ticketService.getTicketsByUser(userId);
     }
+    @GetMapping("/agent/{agentId}")
+    public Flux<TicketResponse> getTicketsByAgent(
+            @PathVariable String agentId
+    ) {
+        return ticketService.getTicketsByAgent(agentId);
+    }
 
     @GetMapping("/status/{status}")
     public Flux<TicketResponse> getTicketsByStatus(
@@ -126,5 +132,10 @@ public class TicketController {
     ) {
         return ticketService.autoAssignTicket(ticketId);
     }
+    @PutMapping("/{ticketId}/sla-breached")
+    public Mono<Void> markSlaBreached(@PathVariable String ticketId) {
+        return ticketService.markSlaBreached(ticketId);
+    }
+
 
 }

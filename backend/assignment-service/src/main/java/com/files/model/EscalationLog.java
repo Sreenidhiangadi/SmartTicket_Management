@@ -20,7 +20,7 @@ public class EscalationLog {
     private String agentId;
     private String escalatedToManagerId;
 
-    private String reason; // SLA_BREACH, MANUAL, PRIORITY_CHANGE
+    private String reason; 
 
     private Instant escalatedAt;
 }
