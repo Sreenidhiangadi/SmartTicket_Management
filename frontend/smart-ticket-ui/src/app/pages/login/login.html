@@ -1,0 +1,61 @@
+<div class="login-page d-flex align-items-center justify-content-center">
+  <div class="card shadow-lg p-4 login-card">
+
+    <h3 class="text-center mb-3">Welcome Back</h3>
+    <p class="text-center text-muted mb-4">
+      Login to continue to Smart Ticket System
+    </p>
+
+    <form [formGroup]="loginForm" (ngSubmit)="submit()">
+
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input
+          type="email"
+          class="form-control"
+          formControlName="email"
+          placeholder="you@example.com"
+        />
+        <small class="text-danger" *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.invalid">
+          Valid email is required
+        </small>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input
+          type="password"
+          class="form-control"
+          formControlName="password"
+          placeholder="Enter password"
+        />
+        <small class="text-danger" *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.invalid">
+          Password is required
+        </small>
+      </div>
+
+      <div class="alert alert-danger py-2" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Button -->
+      <button
+        type="submit"
+        class="btn btn-primary w-100"
+        [disabled]="loading"
+      >
+        <span *ngIf="!loading">Login</span>
+        <span *ngIf="loading">Logging in...</span>
+      </button>
+
+    </form>
+
+    <div class="text-center mt-3">
+      <small>
+        Don’t have an account?
+        <a routerLink="/register">Register</a>
+      </small>
+    </div>
+
+  </div>
+</div>

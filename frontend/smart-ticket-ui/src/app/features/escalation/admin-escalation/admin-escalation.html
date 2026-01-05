@@ -1,0 +1,59 @@
+<div class="container-fluid px-4">
+
+  <h3 class="fw-bold text-danger mb-3">
+    Escalations
+  </h3>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-danger"></div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div class="card shadow-sm" *ngIf="!loading">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Ticket</th>
+          <th>Reason</th>
+          <th>Priority</th>
+          <th>Escalated At</th>
+          <th>Escalated To</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let e of escalations">
+          <td>
+            <a [routerLink]="['/tickets', e.ticketId]">
+              {{ e.ticketId }}
+            </a>
+          </td>
+
+          <td>{{ e.reason }}</td>
+
+          <td>
+            <span class="badge bg-danger">
+              {{ e.priority }}
+            </span>
+          </td>
+
+          <td>{{ e.escalatedAt | date:'short' }}</td>
+
+          <td>
+            {{ e.escalatedToRole }}
+          </td>
+        </tr>
+
+        <tr *ngIf="escalations.length === 0">
+          <td colspan="5" class="text-center text-muted py-4">
+            No escalations found
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>

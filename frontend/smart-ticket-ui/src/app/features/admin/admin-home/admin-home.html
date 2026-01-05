@@ -1,0 +1,54 @@
+<div class="admin-home">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold mb-0">Admin Dashboard</h3>
+  </div>
+
+  <div class="row g-4">
+
+    <div class="col-md-4">
+      <div class="card stat-card shadow-sm">
+        <div class="card-body">
+          <h6 class="text-muted">Total Users</h6>
+          <h2 class="fw-bold">{{ totalUsers }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card stat-card shadow-sm border-success">
+        <div class="card-body">
+          <h6 class="text-muted">Active Users</h6>
+          <h2 class="fw-bold text-success">{{ activeUsers }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card stat-card shadow-sm border-secondary">
+        <div class="card-body">
+          <h6 class="text-muted">Inactive Users</h6>
+          <h2 class="fw-bold text-secondary">
+            {{ totalUsers - activeUsers }}
+          </h2>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="my-4" />
+
+  <h5 class="mb-3">Quick Actions</h5>
+
+  <div class="d-flex gap-2 flex-wrap">
+    <button class="btn btn-primary" (click)="goToUsers()">
+      Manage Users
+    </button>
+
+    <button class="btn btn-outline-dark" routerLink="/reports">
+      View Reports
+    </button>
+  </div>
+
+</div>

@@ -1,0 +1,75 @@
+.reports-page {
+  padding-top: 20px;
+}
+
+.kpi-card {
+  padding: 20px;
+  border: none;
+  border-left: 5px solid #0d6efd;
+  text-align: center;
+  animation: pop 0.6s ease;
+
+  i {
+    font-size: 28px;
+    margin-bottom: 10px;
+    color: #0d6efd;
+  }
+
+  h2 {
+    font-weight: 700;
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+    color: #6c757d;
+  }
+
+  &.success {
+    border-color: #198754;
+    i { color: #198754; }
+  }
+
+  &.warning {
+    border-color: #ffc107;
+    i { color: #ffc107; }
+  }
+
+  &.danger {
+    border-color: #dc3545;
+    i { color: #dc3545; }
+  }
+}
+
+.chart-card {
+  padding: 20px;
+  border: none;
+  box-shadow: 0 6px 18px rgba(0,0,0,.06);
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease forwards;
+}
+
+.fade-in-delayed {
+  animation: fadeIn 0.9s ease forwards;
+}
+
+.slide-up {
+  animation: slideUp 0.7s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(25px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pop {
+  from { transform: scale(0.96); }
+  to { transform: scale(1); }
+}

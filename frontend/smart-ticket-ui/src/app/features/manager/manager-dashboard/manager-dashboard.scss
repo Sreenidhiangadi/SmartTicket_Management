@@ -1,0 +1,15 @@
+.manager-dashboard {
+
+  .stat-card {
+    transition: transform 0.2s ease;
+    cursor: default;
+
+    &:hover {
+      transform: translateY(-3px);
+    }
+  }
+
+  canvas {
+    max-height: 300px;
+  }
+}

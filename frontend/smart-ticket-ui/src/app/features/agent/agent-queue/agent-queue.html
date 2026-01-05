@@ -1,0 +1,94 @@
+<div class="container-fluid px-4 agent-queue">
+
+  <h3 class="fw-bold mb-4">My Ticket Queue</h3>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+    <p class="text-muted mt-2">Loading tickets...</p>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div
+    *ngIf="!loading && tickets.length === 0"
+    class="text-center text-muted py-5"
+  >
+    No assigned tickets 🎉
+  </div>
+
+  <div class="row g-3" *ngIf="!loading && tickets.length">
+
+    <div class="col-md-6 col-lg-4" *ngFor="let t of tickets">
+      <div class="card shadow-sm h-100">
+
+        <div class="card-body d-flex flex-column">
+
+         <h6 class="fw-bold">
+  <a
+    [routerLink]="['/tickets', t.id]"
+    class="text-decoration-none"
+  >
+    {{ t.title }}
+  </a>
+</h6>
+
+
+          <p class="text-muted small mb-2">
+            {{ t.description }}
+          </p>
+
+          <div class="mb-2">
+            <span class="badge bg-info me-2">
+              {{ t.priority }}
+            </span>
+
+            <span
+              class="badge"
+              [class.bg-secondary]="t.status === 'ASSIGNED'"
+              [class.bg-primary]="t.status === 'IN_PROGRESS'"
+              [class.bg-success]="t.status === 'RESOLVED'"
+              [class.bg-dark]="t.status === 'CLOSED'"
+            >
+              {{ t.status }}
+            </span>
+          </div>
+
+          <small class="text-muted mb-3">
+            Created: {{ t.createdAt | date:'short' }}
+          </small>
+
+          <div class="mt-auto d-flex gap-2">
+
+            <button
+              *ngIf="t.status === 'ASSIGNED'"
+              class="btn btn-sm btn-outline-primary"
+              (click)="startWork(t)"
+            >
+              Start
+            </button>
+
+            <button
+              *ngIf="t.status === 'IN_PROGRESS'"
+              class="btn btn-sm btn-outline-success"
+              (click)="resolve(t)"
+            >
+              Resolve
+            </button>
+
+            <button
+              *ngIf="t.status === 'RESOLVED'"
+              class="btn btn-sm btn-outline-danger"
+              (click)="close(t)"
+            >
+              Close
+            </button>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

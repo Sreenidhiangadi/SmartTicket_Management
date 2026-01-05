@@ -1,0 +1,28 @@
+.admin-page {
+  padding-top: 1rem;
+}
+
+table tr:hover {
+  background-color: #f8f9fa;
+}
+.table td,
+.table th {
+  vertical-align: middle;
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 0.4em 0.6em;
+}
+
+.card {
+  border-radius: 0.75rem;
+}
+
+select.form-select {
+  min-width: 120px;
+}
+select:disabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+}

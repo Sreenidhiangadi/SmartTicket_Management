@@ -1,0 +1,65 @@
+<div class="container-fluid px-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold text-danger">SLA Breaches</h3>
+
+    <button
+      class="btn btn-outline-danger btn-sm"
+      (click)="runCheck()"
+      [disabled]="loading"
+    >
+      Re-check SLA
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-danger"></div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div class="card shadow-sm" *ngIf="!loading">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Ticket</th>
+            <th>SLA Due</th>
+            <th>Escalated</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let b of breaches">
+            <td>
+              <a [routerLink]="['/tickets', b.ticketId]">
+                {{ b.ticketId }}
+              </a>
+            </td>
+
+            <td>{{ b.slaDueAt | date:'short' }}</td>
+
+            <td>
+              <span
+                class="badge"
+                [class.bg-danger]="b.escalated"
+                [class.bg-success]="!b.escalated"
+              >
+                {{ b.escalated ? 'Yes' : 'No' }}
+              </span>
+            </td>
+          </tr>
+
+          <tr *ngIf="breaches.length === 0">
+            <td colspan="3" class="text-center text-muted py-4">
+              No SLA breaches 🎉
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

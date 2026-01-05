@@ -1,0 +1,10 @@
+.login-page {
+  min-height: calc(100vh - 56px); // navbar height
+  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 12px;
+}

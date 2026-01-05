@@ -1,0 +1,21 @@
+<div
+  class="toast-container position-fixed top-0 end-0 p-3"
+  style="z-index: 1200"
+>
+  <div
+    *ngIf="toast.toast$ | async as t"
+    class="toast show align-items-center"
+    [ngClass]="{
+      'bg-success text-white': t.type === 'success',
+      'bg-danger text-white': t.type === 'error',
+      'bg-info text-white': t.type === 'info',
+      'bg-warning text-dark': t.type === 'warning'
+    }"
+  >
+    <div class="d-flex">
+      <div class="toast-body">
+        {{ t.message }}
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,55 @@
+<div class="container-fluid px-4">
+
+  <h3 class="fw-bold text-warning mb-3">Escalated Tickets</h3>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-warning"></div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div class="card shadow-sm" *ngIf="!loading">
+    <table class="table table-hover align-middle">
+      <thead>
+        <tr>
+          <th>Ticket</th>
+          <th>Reason</th>
+          <th>Escalated At</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let e of escalations">
+          <td>
+            <a [routerLink]="['/tickets', e.ticketId]">
+              {{ e.ticketId }}
+            </a>
+          </td>
+
+          <td>{{ e.reason }}</td>
+
+          <td>{{ e.escalatedAt | date:'short' }}</td>
+
+          <td>
+            <a
+              class="btn btn-sm btn-outline-primary"
+              [routerLink]="['/tickets', e.ticketId]"
+            >
+              Open Ticket
+            </a>
+          </td>
+        </tr>
+
+        <tr *ngIf="escalations.length === 0">
+          <td colspan="4" class="text-center text-muted py-4">
+            No escalations 🎉
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>

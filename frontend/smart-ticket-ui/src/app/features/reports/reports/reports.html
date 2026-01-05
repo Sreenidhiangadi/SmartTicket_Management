@@ -1,0 +1,70 @@
+<div class="container-fluid px-4 reports-page">
+
+  <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-center mb-4 fade-in">
+    <h3 class="fw-bold">
+      <i class="bi bi-graph-up me-2 text-primary"></i>
+      Reports & Analytics
+    </h3>
+    <span class="text-muted">System overview</span>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="row g-4 mb-4 slide-up">
+    <div class="col-md-3">
+      <div class="card kpi-card">
+        <i class="bi bi-ticket-perforated"></i>
+        <h2>{{ summary?.totalTickets }}</h2>
+        <p>Total Tickets</p>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card kpi-card success">
+        <i class="bi bi-check-circle"></i>
+        <h2>{{ summary?.resolved }}</h2>
+        <p>Resolved</p>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card kpi-card warning">
+        <i class="bi bi-hourglass-split"></i>
+        <h2>{{ summary?.inProgress }}</h2>
+        <p>In Progress</p>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card kpi-card danger">
+        <i class="bi bi-exclamation-triangle"></i>
+        <h2>{{ summary?.slaBreaches }}</h2>
+        <p>SLA Breaches</p>
+      </div>
+    </div>
+  </div>
+  <!-- CHARTS -->
+  <div class="row g-4 fade-in-delayed">
+    <div class="col-lg-4">
+      <div class="card chart-card">
+        <h6 class="fw-bold mb-3">Tickets by Status</h6>
+        <canvas id="statusChart"></canvas>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card chart-card">
+        <h6 class="fw-bold mb-3">Priority Distribution</h6>
+        <canvas id="priorityChart"></canvas>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card chart-card">
+        <h6 class="fw-bold mb-3">SLA Breach Trend</h6>
+        <canvas id="slaChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+</div>
