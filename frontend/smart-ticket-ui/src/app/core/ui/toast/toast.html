@@ -4,7 +4,7 @@
 >
   <div
     *ngIf="toast.toast$ | async as t"
-    class="toast show align-items-center"
+    class="toast show toast-enter"
     [ngClass]="{
       'bg-success text-white': t.type === 'success',
       'bg-danger text-white': t.type === 'error',
@@ -12,10 +12,17 @@
       'bg-warning text-dark': t.type === 'warning'
     }"
   >
-    <div class="d-flex">
-      <div class="toast-body">
-        {{ t.message }}
-      </div>
+    <div class="toast-body d-flex align-items-center gap-2">
+      <i
+        class="bi"
+        [ngClass]="{
+          'bi-check-circle': t.type === 'success',
+          'bi-x-circle': t.type === 'error',
+          'bi-info-circle': t.type === 'info',
+          'bi-exclamation-triangle': t.type === 'warning'
+        }"
+      ></i>
+      {{ t.message }}
     </div>
   </div>
 </div>
