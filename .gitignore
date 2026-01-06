@@ -8,6 +8,7 @@ Thumbs.db
 # Java / Backend
 # ===============================
 target/
+!backend/**/target/*.jar
 *.class
 *.log
 
