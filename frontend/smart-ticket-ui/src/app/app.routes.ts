@@ -17,12 +17,18 @@ import { ManagerEscalationsComponent } from './features/escalation/manager-escal
 import { AdminEscalationsComponent } from './features/escalation/admin-escalation/admin-escalation';
 import { ManagerDashboardComponent } from './features/manager/manager-dashboard/manager-dashboard';
 import { ReportsComponent } from './features/reports/reports/reports';
+import { ProfileComponent } from './features/profile/profile';
 export const routes: Routes = [
   
   {
     path: '',
     component: HomeComponent,
     canActivate: [AuthGuard]
+  },
+ {
+    path: 'profile',
+    canActivate: [AuthGuard],
+    component: ProfileComponent
   },
   {
     path: 'login',
