@@ -2,11 +2,12 @@ import { Component, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Chart } from 'chart.js/auto';
 import { ReportsService } from './reports.service';
-
+import { RouterModule } from '@angular/router';
+import { ChangeDetectorRef } from '@angular/core';
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule,RouterModule],
   templateUrl: './reports.html',
   styleUrls: ['./reports.scss']
 })
@@ -14,25 +15,25 @@ export class ReportsComponent implements AfterViewInit {
 
   summary: any;
 
-  constructor(private service: ReportsService) {}
+  constructor(private service: ReportsService, private cdRef: ChangeDetectorRef) {}
 
   ngAfterViewInit(): void {
+    this.loadSummary();
     this.loadStatusChart();
     this.loadPriorityChart();
-    this.loadSlaChart();
   }
-
 
 loadSummary() {
   this.service.getSummary().subscribe(res => {
     this.summary = {
-      totalTickets: res.totalTickets,
-      resolved: res.ticketsByStatus?.RESOLVED ?? 0,
-      inProgress: res.ticketsByStatus?.IN_PROGRESS ?? 0,
-      slaBreaches: res.slaBreachedTickets
+      totalTickets: res.totalTickets ?? 0,
+      resolved: res.resolved ?? 0,
+      inProgress: res.inProgress ?? 0
     };
+    this.cdRef.detectChanges();
   });
 }
+
 
   loadStatusChart() {
     this.service.statusReport().subscribe(data => {
@@ -43,7 +44,11 @@ loadSummary() {
           datasets: [{
             data: data.map(d => d.count),
             backgroundColor: [
-              '#0d6efd', '#ffc107', '#198754', '#6c757d', '#dc3545'
+              '#0d6efd',
+              '#ffc107',
+              '#198754',
+              '#6c757d',
+              '#dc3545'
             ]
           }]
         },
@@ -55,6 +60,7 @@ loadSummary() {
       });
     });
   }
+
 
   loadPriorityChart() {
     this.service.priorityReport().subscribe(data => {
@@ -71,29 +77,6 @@ loadSummary() {
         options: {
           plugins: { legend: { display: false } },
           animation: { duration: 800 }
-        }
-      });
-    });
-  }
-
-  loadSlaChart() {
-    this.service.slaTrend().subscribe(data => {
-      new Chart('slaChart', {
-        type: 'line',
-        data: {
-          labels: data.map(d => d.date),
-          datasets: [{
-            label: 'SLA Breaches',
-            data: data.map(d => d.count),
-            borderColor: '#dc3545',
-            backgroundColor: 'rgba(220,53,69,0.15)',
-            tension: 0.4,
-            fill: true
-          }]
-        },
-        options: {
-          plugins: { legend: { display: false } },
-          animation: { duration: 900 }
         }
       });
     });
