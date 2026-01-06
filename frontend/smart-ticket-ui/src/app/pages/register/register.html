@@ -1,82 +1,86 @@
 <div class="register-page d-flex align-items-center justify-content-center">
-  <div class="card shadow-lg p-4 register-card">
+  <div class="card register-card shadow-lg">
 
-    <h3 class="text-center mb-3">Create Account</h3>
-    <p class="text-center text-muted mb-4">
-      Register to raise and track tickets
-    </p>
+    <div class="card-body p-4">
+      <div class="text-center mb-4">
+        <i class="bi bi-person-plus auth-icon"></i>
+        <h4 class="mt-2 mb-1">Create Account</h4>
+        <p class="text-muted mb-0">
+          Register to raise and track tickets
+        </p>
+      </div>
 
-    <form [formGroup]="registerForm" (ngSubmit)="submit()">
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
 
-    
-      <div class="mb-3">
-        <label class="form-label">Name</label>
-        <input
-          type="text"
-          class="form-control"
-          formControlName="name"
-          placeholder="Your name"
-        />
-        <small class="text-danger"
-          *ngIf="registerForm.get('name')?.touched && registerForm.get('name')?.invalid">
-          Minimum 3 characters required
+        <div class="mb-3">
+          <label class="form-label">Name</label>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="name"
+            placeholder="Your full name"
+          />
+          <small
+            class="text-danger"
+            *ngIf="registerForm.get('name')?.touched && registerForm.get('name')?.invalid">
+            Minimum 3 characters required
+          </small>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input
+            type="email"
+            class="form-control"
+            formControlName="email"
+            placeholder="you@example.com"
+          />
+          <small
+            class="text-danger"
+            *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.invalid">
+            Valid email is required
+          </small>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label">Password</label>
+          <input
+            type="password"
+            class="form-control"
+            formControlName="password"
+            placeholder="Minimum 5 characters"
+          />
+          <small
+            class="text-danger"
+            *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.invalid">
+            Minimum 5 characters required
+          </small>
+        </div>
+
+        <div class="alert alert-danger py-2" *ngIf="errorMessage">
+          <i class="bi bi-exclamation-circle me-1"></i>
+          {{ errorMessage }}
+        </div>
+
+        <button
+          class="btn btn-primary w-100"
+          type="submit"
+          [disabled]="loading"
+        >
+          <span *ngIf="!loading">Create Account</span>
+          <span *ngIf="loading">
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            Creating…
+          </span>
+        </button>
+      </form>
+
+      <div class="text-center mt-4">
+        <small class="text-muted">
+          Already have an account?
+          <a routerLink="/login" class="fw-semibold">Login</a>
         </small>
       </div>
-
-     
-      <div class="mb-3">
-        <label class="form-label">Email</label>
-        <input
-          type="email"
-          class="form-control"
-          formControlName="email"
-          placeholder="you@example.com"
-        />
-        <small class="text-danger"
-          *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.invalid">
-          Valid email is required
-        </small>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Password</label>
-        <input
-          type="password"
-          class="form-control"
-          formControlName="password"
-          placeholder="Minimum 8 characters"
-        />
-        <small class="text-danger"
-          *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.invalid">
-          Minimum 8 characters required
-        </small>
-      </div>
-
-    
-      <div class="alert alert-danger py-2" *ngIf="errorMessage">
-        {{ errorMessage }}
-      </div>
-
-      <button
-        class="btn btn-success w-100"
-        type="submit"
-        [disabled]="loading"
-      >
-        <span *ngIf="!loading">Register</span>
-        <span *ngIf="loading">Creating account...</span>
-      </button>
-
-    </form>
-<small class="text-danger"
-  *ngIf="registerForm.get('email')?.hasError('duplicate')">
-  Email already exists
-</small>
-
-    <div class="text-center mt-3">
-      <small>
-        Already have an account?
-        <a routerLink="/login">Login</a>
-      </small>
     </div>
 
   </div>
