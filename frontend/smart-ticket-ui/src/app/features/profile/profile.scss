@@ -1,0 +1,139 @@
+.profile-page {
+  min-height: calc(100vh - 72px);
+  padding-top: 48px;
+}
+
+.profile-card {
+  width: 100%;
+  max-width: 520px;
+  border-radius: 16px;
+  overflow: hidden;
+  animation: slideUp 0.4s ease;
+}
+
+.profile-header {
+  background: linear-gradient(135deg, #3b7bda, #6695ed);
+  color: #fff;
+  padding: 32px 20px 24px;
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  margin: 0 auto;
+}
+
+.profile-content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.profile-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.profile-row label {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.profile-row div {
+  font-weight: 600;
+  color: #212529;
+}
+
+.icon {
+  font-size: 1.3rem;
+  color: #000000;
+  margin-top: 2px;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-pill.active {
+  background: rgba(25, 135, 84, 0.15);
+  color: #198754;
+}
+
+.status-pill.inactive {
+  background: rgba(220, 53, 69, 0.15);
+  color: #dc3545;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.35s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.notifications-wrapper {
+  margin-top: 12px;
+}
+
+.slide-down {
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.notifications-panel {
+  max-height: 360px;       
+  overflow-y: auto;
+  padding-right: 6px;      
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.notifications-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notifications-panel::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.notifications-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
