@@ -20,29 +20,44 @@ class TicketDtoTest {
     }
 
     @Test
-    void autoAssignmentResponse_fullLombokCoverage() {
+    void autoAssignmentResponse() {
 
-        Instant now = Instant.now();
+    	 Instant now = Instant.now();
 
-        AutoAssignmentResponse r1 = new AutoAssignmentResponse();
-        r1.setTicketId("t1");
-        r1.setAgentId("a1");
-        r1.setPriority("HIGH");
-        r1.setSlaDueAt(now);
-        r1.setAgentEmail("agent@test.com");
+         AutoAssignmentResponse r1 = new AutoAssignmentResponse();
+         r1.setTicketId("t1");
+         r1.setAgentId("a1");
+         r1.setPriority("HIGH");
+         r1.setSlaDueAt(now);
+         r1.setAgentEmail("agent@test.com");
 
-        AutoAssignmentResponse r2 = new AutoAssignmentResponse();
-        r2.setTicketId("t1");
-        r2.setAgentId("a1");
-        r2.setPriority("HIGH");
-        r2.setSlaDueAt(now);
-        r2.setAgentEmail("agent@test.com");
-        assertEquals(r1, r2);
-        assertEquals(r1.hashCode(), r2.hashCode());
-        assertNotEquals(r1, null);
-        assertNotEquals(r1, "string");
-        assertNotEquals(r1, new AutoAssignmentResponse());
-        assertNotNull(r1.toString());
+         AutoAssignmentResponse r2 = new AutoAssignmentResponse();
+         r2.setTicketId("t1");
+         r2.setAgentId("a1");
+         r2.setPriority("HIGH");
+         r2.setSlaDueAt(now);
+         r2.setAgentEmail("agent@test.com");
+
+         assertEquals("t1", r1.getTicketId());
+         assertEquals("a1", r1.getAgentId());
+         assertEquals("HIGH", r1.getPriority());
+         assertEquals(now, r1.getSlaDueAt());
+         assertEquals("agent@test.com", r1.getAgentEmail());
+
+         assertEquals(r1, r2);
+         assertEquals(r1.hashCode(), r2.hashCode());
+
+         assertNotEquals(r1, null);
+         assertNotEquals(r1, "string");
+         assertNotEquals(r1, new AutoAssignmentResponse());
+
+         String value = r1.toString();
+         assertNotNull(value);
+         assertTrue(value.contains("ticketId"));
+         assertTrue(value.contains("agentId"));
+         assertTrue(value.contains("priority"));
+         assertTrue(value.contains("slaDueAt"));
+         assertTrue(value.contains("agentEmail"));
     }
 
     @Test

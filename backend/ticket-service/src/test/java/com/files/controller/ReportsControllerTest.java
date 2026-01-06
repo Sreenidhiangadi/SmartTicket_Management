@@ -5,6 +5,7 @@ import com.files.model.TicketPriority;
 import com.files.model.TicketStatus;
 import com.files.reports.AvgResolutionTimeReport;
 import com.files.reports.ReportService;
+import com.files.reports.ReportSummaryDto;
 import com.files.reports.ReportsController;
 import com.files.reports.TicketsByPriorityReport;
 import com.files.reports.TicketsByStatusReport;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
@@ -20,6 +22,7 @@ import reactor.core.publisher.Mono;
 import static org.mockito.Mockito.when;
 
 @WebFluxTest(ReportsController.class)
+@WithMockUser
 class ReportsControllerTest {
 
     @Autowired
@@ -82,6 +85,16 @@ class ReportsControllerTest {
                 .mutateWith(SecurityMockServerConfigurers.mockJwt())
                 .get()
                 .uri("/reports/sla-breaches")
+                .exchange()
+                .expectStatus().isOk();
+    }
+    @Test
+    void summary_endpoint() {
+        when(reportService.summary())
+                .thenReturn(Mono.just(new ReportSummaryDto(10, 4, 3)));
+
+        webTestClient.get()
+                .uri("/reports/summary")
                 .exchange()
                 .expectStatus().isOk();
     }
