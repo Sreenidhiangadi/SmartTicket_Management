@@ -1,3 +1,9 @@
+.container-fluid {
+  padding-top: 28px;
+  padding-bottom: 24px;
+  background-color: #f8fafc;
+  min-height: calc(100vh - 72px);
+}
 .manager-dashboard {
 
   .stat-card {

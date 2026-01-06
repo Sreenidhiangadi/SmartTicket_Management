@@ -18,6 +18,7 @@ public class SecurityConfig {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(ex -> ex
+                		.pathMatchers("/actuator/**").permitAll()
                         .pathMatchers("/notifications/**").authenticated()
                         .anyExchange().denyAll()
                 )

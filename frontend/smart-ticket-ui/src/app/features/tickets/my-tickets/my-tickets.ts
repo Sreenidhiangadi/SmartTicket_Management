@@ -18,6 +18,8 @@ export class MyTicketsComponent implements OnInit {
   tickets: any[] = [];
   loading = false;
   error = '';
+  filteredTickets: any[] = [];
+
 page = 0;
 size = 10;
 
@@ -32,6 +34,23 @@ priorityFilter = '';
   ngOnInit(): void {
     this.loadTickets();
   }
+applyFilters(): void {
+  this.filteredTickets = this.tickets.filter(t => {
+    const statusMatch =
+      !this.statusFilter || t.status === this.statusFilter;
+
+    const priorityMatch =
+      !this.priorityFilter || t.priority === this.priorityFilter;
+
+    return statusMatch && priorityMatch;
+  });
+}
+
+clearFilters(): void {
+  this.statusFilter = '';
+  this.priorityFilter = '';
+  this.filteredTickets = [...this.tickets];
+}
 
   loadTickets(): void {
     const userId = this.auth.getUserId();
@@ -45,7 +64,9 @@ priorityFilter = '';
     .subscribe({
       next: res => {
         this.tickets = res;
+        this.applyFilters();
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.error = 'Failed to load tickets';

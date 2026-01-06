@@ -1,54 +1,107 @@
 <div class="admin-home">
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="fw-bold mb-0">Admin Dashboard</h3>
+  <!-- HEADER -->
+  <div class="header mb-4">
+    <h3 class="fw-bold mb-1">
+      <i class="bi bi-shield-lock me-2"></i>
+      Admin Dashboard
+    </h3>
+    <p class="text-muted mb-0">
+      System overview and administrative health
+    </p>
   </div>
 
-  <div class="row g-4">
+  <!-- KPI CARDS -->
+  <div class="row g-4 mb-4">
 
     <div class="col-md-4">
-      <div class="card stat-card shadow-sm">
+      <div class="card stat-card">
         <div class="card-body">
-          <h6 class="text-muted">Total Users</h6>
-          <h2 class="fw-bold">{{ totalUsers }}</h2>
+          <div class="stat-label">Total Users</div>
+          <div class="stat-value">{{ totalUsers }}</div>
         </div>
       </div>
     </div>
 
     <div class="col-md-4">
-      <div class="card stat-card shadow-sm border-success">
+      <div class="card stat-card stat-success">
         <div class="card-body">
-          <h6 class="text-muted">Active Users</h6>
-          <h2 class="fw-bold text-success">{{ activeUsers }}</h2>
+          <div class="stat-label">Active Users</div>
+          <div class="stat-value text-success">
+            {{ activeUsers }}
+          </div>
         </div>
       </div>
     </div>
 
     <div class="col-md-4">
-      <div class="card stat-card shadow-sm border-secondary">
+      <div class="card stat-card stat-muted">
         <div class="card-body">
-          <h6 class="text-muted">Inactive Users</h6>
-          <h2 class="fw-bold text-secondary">
+          <div class="stat-label">Inactive Users</div>
+          <div class="stat-value text-muted">
             {{ totalUsers - activeUsers }}
-          </h2>
+          </div>
         </div>
       </div>
     </div>
 
   </div>
 
-  <hr class="my-4" />
+  <!-- SYSTEM STATUS -->
+  <div class="card section-card mb-4">
+    <div class="card-body">
 
-  <h5 class="mb-3">Quick Actions</h5>
+      <h6 class="section-title">
+        <i class="bi bi-hdd-network me-1"></i>
+        System Status
+      </h6>
 
-  <div class="d-flex gap-2 flex-wrap">
-    <button class="btn btn-primary" (click)="goToUsers()">
-      Manage Users
-    </button>
+      <div class="row g-3 mt-2">
 
-    <button class="btn btn-outline-dark" routerLink="/reports">
-      View Reports
-    </button>
+        <div class="col-md-4">
+          <div class="status-item success">
+            <i class="bi bi-check-circle-fill"></i>
+            User Service
+            <span>Operational</span>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="status-item success">
+            <i class="bi bi-check-circle-fill"></i>
+            Ticket Service
+            <span>Operational</span>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="status-item success">
+            <i class="bi bi-check-circle-fill"></i>
+            SLA Monitor
+            <span>Normal</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ATTENTION / ALERTS -->
+  <div class="card section-card">
+    <div class="card-body">
+
+      <h6 class="section-title">
+        <i class="bi bi-bell me-1"></i>
+        Attention Needed
+      </h6>
+
+      <div class="alert alert-success mb-0 mt-2">
+        <i class="bi bi-check-circle me-1"></i>
+        No critical issues detected. System is operating normally.
+      </div>
+
+    </div>
   </div>
 
 </div>

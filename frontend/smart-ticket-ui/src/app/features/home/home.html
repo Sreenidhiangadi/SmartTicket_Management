@@ -1,57 +1,129 @@
-<div class="home-hero">
-  <div class="container text-center">
-    <h1 class="fw-bold mb-3">
-      Smart Ticket & Issue Management System
-    </h1>
+<!-- HERO -->
+<section class="home-hero">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-7">
+        <span class="badge hero-badge mb-3">
+          Enterprise Ticketing Platform
+        </span>
 
-    <p class="lead text-muted mb-4">
-      Raise issues. Track progress. Resolve faster.
-    </p>
+        <h1 class="hero-title mb-3">
+          Smart Ticket & Issue Management
+        </h1>
 
-    <div class="d-flex justify-content-center gap-3">
-      <a routerLink="/register" class="btn btn-primary btn-lg">
-        Get Started
-      </a>
-      <a routerLink="/login" class="btn btn-outline-secondary btn-lg">
-        Login
-      </a>
+        <p class="hero-subtitle mb-4">
+          A structured, role-based system to raise issues, track progress,
+          and resolve them with SLA-driven accountability.
+        </p>
+
+        <div class="d-flex gap-3">
+          <a
+            *ngIf="!authService.isLoggedIn()"
+            routerLink="/register"
+            class="btn btn-primary btn-lg"
+          >
+            <i class="bi bi-person-plus me-2"></i>
+            Get Started
+          </a>
+
+          <a
+            *ngIf="!authService.isLoggedIn()"
+            routerLink="/login"
+            class="btn btn-outline-light btn-lg"
+          >
+            <i class="bi bi-box-arrow-in-right me-2"></i>
+            Login
+          </a>
+
+          <button
+            *ngIf="authService.isLoggedIn()"
+            (click)="goToHomeByRole()"
+            class="btn btn-success btn-lg"
+          >
+            <i class="bi bi-arrow-right-circle me-2"></i>
+            Continue
+          </button>
+        </div>
+      </div>
+
+      <div class="col-md-5 text-center d-none d-md-block">
+        <i class="bi bi-ticket-perforated hero-icon"></i>
+      </div>
     </div>
   </div>
-</div>
+</section>
 
-<div class="container my-5">
+<!-- FEATURES -->
+<section class="container my-5">
   <div class="row g-4">
     <div class="col-md-4">
-      <div class="card shadow-sm h-100">
-        <div class="card-body">
-          <h5 class="card-title">Raise Tickets</h5>
-          <p class="card-text">
-            Easily create tickets with priority and category.
-          </p>
-        </div>
+      <div class="feature-card">
+        <i class="bi bi-pencil-square feature-icon"></i>
+        <h5>Raise Tickets</h5>
+        <p>
+          Create structured tickets with category, priority,
+          and clear problem context.
+        </p>
       </div>
     </div>
 
     <div class="col-md-4">
-      <div class="card shadow-sm h-100">
-        <div class="card-body">
-          <h5 class="card-title">Track Status</h5>
-          <p class="card-text">
-            Follow ticket lifecycle from creation to closure.
-          </p>
-        </div>
+      <div class="feature-card">
+        <i class="bi bi-arrow-repeat feature-icon"></i>
+        <h5>Track Lifecycle</h5>
+        <p>
+          Follow every stage from Open to Closed with full
+          activity timelines.
+        </p>
       </div>
     </div>
 
     <div class="col-md-4">
-      <div class="card shadow-sm h-100">
-        <div class="card-body">
-          <h5 class="card-title">Analytics & SLA</h5>
-          <p class="card-text">
-            Managers get insights with dashboards and reports.
-          </p>
+      <div class="feature-card">
+        <i class="bi bi-bar-chart-line feature-icon"></i>
+        <h5>SLA & Insights</h5>
+        <p>
+          Monitor SLA compliance and performance using
+          role-based dashboards.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="process-strip">
+  <div class="container">
+    <div class="row text-center">
+      <div class="col-md-4">
+        <a
+          *ngIf="authService.hasRole('USER')"
+          routerLink="/tickets/create"
+          class="process-step text-decoration-none"
+        >
+          <i class="bi bi-plus-circle process-icon"></i>
+          <p class="process-label">Raise</p>
+        </a>
+      </div>
+
+      <div class="col-md-4">
+        <a
+          *ngIf="authService.hasRole('USER')"
+          routerLink="/tickets/my"
+          class="process-step text-decoration-none"
+        >
+          <i class="bi bi-clock-history process-icon"></i>
+          <p class="process-label">Track</p>
+        </a>
+      </div>
+
+      <div class="col-md-4">
+        <div class="process-step disabled">
+          <i class="bi bi-check-circle process-icon"></i>
+          <p class="process-label">Resolve</p>
+          <small class="text-muted">Handled by agents</small>
         </div>
       </div>
     </div>
   </div>
-</div>
+</section>
+

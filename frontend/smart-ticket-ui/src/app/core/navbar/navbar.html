@@ -1,132 +1,128 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4 fixed-top">
-  <a class="navbar-brand fw-bold" routerLink="/">
-    Smart Ticket System
+<nav class="navbar navbar-expand-lg app-navbar fixed-top">
+  <div class="container-fluid px-4">
+
+    <a class="navbar-brand d-flex align-items-center gap-2" (click)="goHome()">
+      <i class="bi bi-ticket-perforated brand-icon"></i>
+      <span>Smart Ticket</span>
+    </a>
+
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarNav"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
+
+        <!-- USER -->
+        <li class="nav-item" *ngIf="auth.isLoggedIn() && hasRole('USER')">
+          <a class="nav-link" (click)="goHome()">
+            <i class="bi bi-house-door me-1"></i>
+            Home
+          </a>
+        </li>
+
+        <li class="nav-item" *ngIf="auth.isLoggedIn() && hasRole('USER')">
+          <a routerLink="/tickets/create" routerLinkActive="active" class="nav-link">
+            <i class="bi bi-plus-circle me-1"></i>
+            Create Ticket
+          </a>
+        </li>
+
+        <li class="nav-item" *ngIf="auth.isLoggedIn() && hasRole('USER')">
+          <a routerLink="/tickets/my" routerLinkActive="active" class="nav-link">
+            <i class="bi bi-list-task me-1"></i>
+            My Tickets
+          </a>
+        </li>
+
+        <!-- AGENT -->
+        <li class="nav-item" *ngIf="auth.isLoggedIn() && hasRole('AGENT')">
+          <a routerLink="/agent/queue" routerLinkActive="active" class="nav-link">
+            <i class="bi bi-inbox me-1"></i>
+            Queue
+          </a>
+        </li>
+
+        <!-- MANAGER -->
+        <li class="nav-item" *ngIf="auth.isLoggedIn() && hasRole('MANAGER')">
+          <a routerLink="/manager/dashboard" routerLinkActive="active" class="nav-link">
+            <i class="bi bi-speedometer2 me-1"></i>
+            Dashboard
+          </a>
+        </li>
+
+        <li class="nav-item" *ngIf="auth.isLoggedIn() && hasRole('MANAGER')">
+          <a routerLink="/manager/tickets" routerLinkActive="active" class="nav-link">
+            <i class="bi bi-kanban me-1"></i>
+            Tickets
+          </a>
+        </li>
+
+        <li class="nav-item" *ngIf="auth.isLoggedIn() && hasRole('MANAGER')">
+          <a routerLink="/reports" routerLinkActive="active" class="nav-link">
+            <i class="bi bi-bar-chart-line me-1"></i>
+            Reports
+          </a>
+        </li>
+
+        <!-- ADMIN -->
+        <li class="nav-item" *ngIf="auth.isLoggedIn() && hasRole('ADMIN')">
+          <a routerLink="/admin" routerLinkActive="active" class="nav-link">
+            <i class="bi bi-speedometer2 me-1"></i>
+            Dashboard
+          </a>
+        </li>
+
+        <li class="nav-item" *ngIf="auth.isLoggedIn() && hasRole('ADMIN')">
+          <a routerLink="/admin/users" routerLinkActive="active" class="nav-link">
+            <i class="bi bi-people me-1"></i>
+            Users
+          </a>
+        </li>
+
+        <li class="nav-item" *ngIf="auth.isLoggedIn() && hasRole('ADMIN')">
+          <a routerLink="/admin/escalations" routerLinkActive="active" class="nav-link">
+            <i class="bi bi-exclamation-triangle me-1"></i>
+            Escalations
+          </a>
+        </li>
+
+        <li class="nav-item" *ngIf="auth.isLoggedIn() && hasRole('ADMIN')">
+          <a routerLink="/reports" routerLinkActive="active" class="nav-link">
+            <i class="bi bi-bar-chart-line me-1"></i>
+            Reports
+          </a>
+        </li>
+
+        <!-- AUTH -->
+        <li class="nav-item" *ngIf="!auth.isLoggedIn()">
+          <a routerLink="/login" class="nav-link fs-6">Login</a>
+        </li>
+
+        <li class="nav-item" *ngIf="!auth.isLoggedIn()">
+          <a routerLink="/register" class="btn btn-primary btn-sm fs-6">
+            Register
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="auth.isLoggedIn()">
+  <a routerLink="/profile" routerLinkActive="active" class="nav-link">
+    <i class="bi bi-person-circle me-1"></i>
+    Profile
   </a>
+</li>
 
-  <button
-    class="navbar-toggler"
-    type="button"
-    data-bs-toggle="collapse"
-    data-bs-target="#navbarNav"
-  >
-    <span class="navbar-toggler-icon"></span>
-  </button>
+        <li class="nav-item" *ngIf="auth.isLoggedIn()">
+          <button class="btn btn-outline-danger btn-sm" (click)="logout()">
+            <i class="bi bi-box-arrow-right"></i>
+          </button>
+        </li>
 
-  <div class="collapse navbar-collapse" id="navbarNav">
-    <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
-
-      <li class="nav-item">
-        <a class="nav-link" (click)="goHome()">Home</a>
-      </li>
-
-      <li class="nav-item" *ngIf="auth.isLoggedIn() && hasRole('USER')">
-        <a class="nav-link" routerLink="/tickets/create">
-          Create Ticket
-        </a>
-      </li>
-
-      <li class="nav-item" *ngIf="auth.isLoggedIn() && hasRole('USER')">
-        <a class="nav-link" routerLink="/tickets/my">
-          My Tickets
-        </a>
-      </li>
-
-      <li class="nav-item" *ngIf="auth.isLoggedIn() && hasRole('AGENT')">
-        <a class="nav-link" routerLink="/agent/queue">
-          Ticket Queue
-        </a>
-      </li>
-
-      <li class="nav-item" *ngIf="auth.isLoggedIn() && hasRole('MANAGER')">
-        <a class="nav-link" routerLink="/manager/dashboard">
-          Dashboard
-        </a>
-      </li>
-
-      <li class="nav-item" *ngIf="hasRole('MANAGER')">
-        <a class="nav-link" routerLink="/manager/tickets">
-          Tickets
-        </a>
-      </li>
-
-      <!-- ✅ ANALYTICS (ADMIN + MANAGER) -->
-      <li
-        class="nav-item dropdown"
-        *ngIf="auth.isLoggedIn() && (hasRole('ADMIN'))"
-      >
-        <a
-          class="nav-link dropdown-toggle"
-          role="button"
-          data-bs-toggle="dropdown"
-        >
-          <i class="bi bi-bar-chart-line me-1"></i>
-          Analytics
-        </a>
-
-        <ul class="dropdown-menu dropdown-menu-end">
-          <li>
-            <a class="dropdown-item" routerLink="/reports">
-              <i class="bi bi-graph-up me-2"></i>
-              Reports
-            </a>
-          </li>
-
-          <li *ngIf="hasRole('ADMIN')">
-            <a class="dropdown-item" routerLink="/admin">
-              <i class="bi bi-shield-lock me-2"></i>
-              Admin Panel
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <!-- EXISTING ADMIN DROPDOWN -->
-      <li class="nav-item dropdown" *ngIf="auth.isLoggedIn() && hasRole('ADMIN')">
-        <a
-          class="nav-link dropdown-toggle"
-          role="button"
-          data-bs-toggle="dropdown"
-        >
-          Admin
-        </a>
-
-        <ul class="dropdown-menu dropdown-menu-end">
-          <li>
-            <a
-              class="dropdown-item"
-              [routerLink]="['/admin/users']"
-              (click)="$event.stopPropagation()"
-            >
-              Manage Users
-            </a>
-          </li>
-          <li>
-            <a class="dropdown-item" routerLink="/admin/escalations">
-              Escalations
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <li class="nav-item" *ngIf="!auth.isLoggedIn()">
-        <a class="nav-link" routerLink="/login">Login</a>
-      </li>
-
-      <li class="nav-item" *ngIf="!auth.isLoggedIn()">
-        <a class="btn btn-outline-light btn-sm" routerLink="/register">
-          Register
-        </a>
-      </li>
-
-      <li class="nav-item" *ngIf="auth.isLoggedIn()">
-        <button
-          class="btn btn-outline-danger btn-sm"
-          (click)="logout()"
-        >
-          Logout
-        </button>
-      </li>
-
-    </ul>
+      </ul>
+    </div>
   </div>
 </nav>

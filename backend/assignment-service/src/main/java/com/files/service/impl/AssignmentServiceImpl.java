@@ -1,5 +1,15 @@
 package com.files.service.impl;
 
+import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+
 import com.files.dto.AgentDto;
 import com.files.dto.response.AutoAssignmentResponse;
 import com.files.exception.AssignmentAlreadyExistsException;
@@ -11,180 +21,93 @@ import com.files.repository.EscalationLogRepository;
 import com.files.service.AgentClientService;
 import com.files.service.AssignmentService;
 import com.files.util.SlaPolicyCalculator;
+
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-
 import reactor.core.publisher.Mono;
-
-import java.time.Instant;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class AssignmentServiceImpl implements AssignmentService {
 
-    private final AssignmentRepository assignmentRepository;
-    private final EscalationLogRepository escalationLogRepository;
-    private final AgentClientService agentClientService;
-    private final WebClient ticketWebClient;
+	private final AssignmentRepository assignmentRepository;
+	private final EscalationLogRepository escalationLogRepository;
+	private final AgentClientService agentClientService;
+	private final WebClient ticketWebClient;
 
-    @Override
-    public Mono<Assignment> assignTicket(
-            String ticketId,
-            String agentId,
-            String priority
-    ) {
+	@Override
+	public Mono<Assignment> assignTicket(String ticketId, String agentId, String priority) {
 
-        return assignmentRepository.findByTicketId(ticketId)
-            .flatMap(existing ->
-                Mono.<Assignment>error(
-                    new AssignmentAlreadyExistsException(ticketId)
-                )
-            )
-            .switchIfEmpty(Mono.defer(() -> {
+		return assignmentRepository.findByTicketId(ticketId)
+				.flatMap(existing -> Mono.<Assignment>error(new AssignmentAlreadyExistsException(ticketId)))
+				.switchIfEmpty(Mono.defer(() -> {
 
-                String finalPriority =
-                        priority != null ? priority : "MEDIUM";
+					String finalPriority = priority != null ? priority : "MEDIUM";
 
-                Assignment assignment = Assignment.builder()
-                        .ticketId(ticketId)
-                        .agentId(agentId)
-                        .priority(finalPriority)
-                        .assignedAt(Instant.now())
-                        .slaDueAt(
-                                SlaPolicyCalculator.calculateDueAt(finalPriority)
-                        )
-                        .escalated(false)
-                        .build();
+					Assignment assignment = Assignment.builder().ticketId(ticketId).agentId(agentId)
+							.priority(finalPriority).assignedAt(Instant.now())
+							.slaDueAt(SlaPolicyCalculator.calculateDueAt(finalPriority)).escalated(false).build();
 
-                return assignmentRepository.save(assignment);
-            }));
-    }
+					return assignmentRepository.save(assignment);
+				}));
+	}
 
+	@Override
+	public Mono<AutoAssignmentResponse> autoAssign(String ticketId, String priority) {
 
-    @Override
-    public Mono<AutoAssignmentResponse> autoAssign(
-            String ticketId,
-            String priority
-    ) {
+		String finalPriority = priority != null ? priority : "MEDIUM";
 
-        String finalPriority = priority != null ? priority : "MEDIUM";
+		return assignmentRepository.findByTicketId(ticketId)
+				.flatMap(existing -> Mono.<AutoAssignmentResponse>error(new AssignmentAlreadyExistsException(ticketId)))
+				.switchIfEmpty(Mono.defer(() -> {
 
-        return assignmentRepository.findByTicketId(ticketId)
-            .flatMap(existing ->
-                Mono.<AutoAssignmentResponse>error(
-                    new AssignmentAlreadyExistsException(ticketId)
-                )
-            )
-            .switchIfEmpty(Mono.defer(() -> {
+					Mono<List<AgentDto>> agentsMono = agentClientService.fetchActiveAgents().collectList();
 
-                Mono<List<AgentDto>> agentsMono =
-                        agentClientService
-                                .fetchActiveAgents()
-                                .collectList();
+					Mono<Map<String, Long>> workloadMono = assignmentRepository.findAll()
+							.groupBy(Assignment::getAgentId).flatMap(g -> g.count().map(c -> Map.entry(g.key(), c)))
+							.collectMap(Map.Entry::getKey, Map.Entry::getValue);
 
-                Mono<Map<String, Long>> workloadMono =
-                        assignmentRepository.findAll()
-                                .groupBy(Assignment::getAgentId)
-                                .flatMap(g ->
-                                        g.count()
-                                         .map(c -> Map.entry(g.key(), c))
-                                )
-                                .collectMap(
-                                        Map.Entry::getKey,
-                                        Map.Entry::getValue
-                                );
+					return Mono.zip(agentsMono, workloadMono).flatMap(tuple -> {
 
-                return Mono.zip(agentsMono, workloadMono)
-                        .flatMap(tuple -> {
+						List<AgentDto> agents = tuple.getT1();
+						Map<String, Long> workload = tuple.getT2();
 
-                            List<AgentDto> agents = tuple.getT1();
-                            Map<String, Long> workload = tuple.getT2();
+						AgentWorkload selected = agents.stream().map(
+								agent -> new AgentWorkload(agent.getId(), workload.getOrDefault(agent.getId(), 0L)))
+								.min(Comparator.comparingLong(AgentWorkload::getActiveTickets))
+								.orElseThrow(() -> new IllegalStateException("No active agents found"));
 
-                            AgentWorkload selected =
-                                    agents.stream()
-                                            .map(agent ->
-                                                    new AgentWorkload(
-                                                            agent.getId(),
-                                                            workload.getOrDefault(
-                                                                    agent.getId(),
-                                                                    0L
-                                                            )
-                                                    )
-                                            )
-                                            .min(Comparator.comparingLong(
-                                                    AgentWorkload::getActiveTickets
-                                            ))
-                                            .orElseThrow(() ->
-                                                    new IllegalStateException(
-                                                            "No active agents found"
-                                                    )
-                                            );
+						Assignment assignment = Assignment.builder().ticketId(ticketId).agentId(selected.getAgentId())
+								.priority(finalPriority).assignedAt(Instant.now())
+								.slaDueAt(SlaPolicyCalculator.calculateDueAt(finalPriority)).escalated(false).build();
 
-                            Assignment assignment = Assignment.builder()
-                                    .ticketId(ticketId)
-                                    .agentId(selected.getAgentId())
-                                    .priority(finalPriority)
-                                    .assignedAt(Instant.now())
-                                    .slaDueAt(
-                                            SlaPolicyCalculator
-                                                    .calculateDueAt(finalPriority)
-                                    )
-                                    .escalated(false)
-                                    .build();
+						return assignmentRepository.save(assignment)
+								.map(saved -> AutoAssignmentResponse.builder().ticketId(ticketId)
+										.agentId(saved.getAgentId()).priority(finalPriority)
+										.slaDueAt(saved.getSlaDueAt()).build());
 
-                            return assignmentRepository.save(assignment)
-                            	    .map(saved ->
-                            	        AutoAssignmentResponse.builder()
-                            	            .ticketId(ticketId)
-                            	            .agentId(saved.getAgentId())
-                            	            .priority(finalPriority)
-                            	            .slaDueAt(saved.getSlaDueAt())
-                            	            .build()
-                            	    );
+					});
+				}));
+	}
 
-                        });
-            }));
-    }
+	@Override
+	public Mono<Assignment> escalate(Assignment assignment, String reason) {
 
-    @Override
-    public Mono<Assignment> escalate(Assignment assignment, String reason) {
+		return ReactiveSecurityContextHolder.getContext().map(ctx -> (JwtAuthenticationToken) ctx.getAuthentication())
+				.flatMap(auth -> {
 
-        return ReactiveSecurityContextHolder.getContext()
-            .map(ctx -> (JwtAuthenticationToken) ctx.getAuthentication())
-            .flatMap(auth -> {
+					String bearerToken = "Bearer " + auth.getToken().getTokenValue();
 
-                String bearerToken =
-                    "Bearer " + auth.getToken().getTokenValue();
+					assignment.setEscalated(true);
 
-                assignment.setEscalated(true);
+					EscalationLog log = EscalationLog.builder().ticketId(assignment.getTicketId())
+							.agentId(assignment.getAgentId()).escalatedToManagerId("AUTO_MANAGER").reason(reason)
+							.escalatedAt(Instant.now()).build();
 
-                EscalationLog log = EscalationLog.builder()
-                    .ticketId(assignment.getTicketId())
-                    .agentId(assignment.getAgentId())
-                    .escalatedToManagerId("AUTO_MANAGER")
-                    .reason(reason)
-                    .escalatedAt(Instant.now())
-                    .build();
-
-                return assignmentRepository.save(assignment)
-                    .then(
-                        ticketWebClient
-                            .put()
-                            .uri("/tickets/{id}/sla-breached", assignment.getTicketId())
-                            .header("Authorization", bearerToken)
-                            .retrieve()
-                            .bodyToMono(Void.class)
-                    )
-                    .then(escalationLogRepository.save(log))
-                    .thenReturn(assignment);
-            });
-    }
+					return assignmentRepository.save(assignment)
+							.then(ticketWebClient.put().uri("/tickets/{id}/sla-breached", assignment.getTicketId())
+									.header("Authorization", bearerToken).retrieve().bodyToMono(Void.class))
+							.then(escalationLogRepository.save(log)).thenReturn(assignment);
+				});
+	}
 
 }

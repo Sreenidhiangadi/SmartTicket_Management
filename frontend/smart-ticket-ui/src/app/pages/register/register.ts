@@ -4,10 +4,28 @@ import {
   FormBuilder,
   FormGroup,
   Validators,
-  ReactiveFormsModule
+  ReactiveFormsModule,
+  AbstractControl,
+  ValidationErrors,
+  ValidatorFn
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+
+export const passwordMatchValidator: ValidatorFn = (
+  control: AbstractControl
+): ValidationErrors | null => {
+  const password = control.get('password')?.value;
+  const confirmPassword = control.get('confirmPassword')?.value;
+
+  if (!password || !confirmPassword) {
+    return null;
+  }
+
+  return password === confirmPassword
+    ? null
+    : { passwordMismatch: true };
+};
 
 @Component({
   selector: 'app-register',
@@ -26,11 +44,17 @@ export class RegisterComponent {
     private authService: AuthService,
     private router: Router
   ) {
-    this.registerForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(5)]]
-    });
+    this.registerForm = this.fb.group(
+      {
+        name: ['', [Validators.required, Validators.minLength(3)]],
+        email: ['', [Validators.required, Validators.email]],
+        password: ['', [Validators.required, Validators.minLength(8)]],
+        confirmPassword: ['', Validators.required]
+      },
+      {
+        validators: passwordMatchValidator
+      }
+    );
   }
 
   onSubmit(): void {
@@ -42,17 +66,36 @@ export class RegisterComponent {
     this.loading = true;
     this.errorMessage = null;
 
-    this.authService.register(this.registerForm.value).subscribe({
+    const { confirmPassword, ...payload } = this.registerForm.value;
+
+    this.authService.register(payload).subscribe({
       next: () => {
         this.loading = false;
         this.router.navigate(['/login']);
       },
-      error: err => {
-        this.loading = false;
-        this.errorMessage =
-          err?.error?.message ||
-          (typeof err?.error === 'string' ? err.error : 'Registration failed.');
-      }
+error: err => {
+  this.loading = false;
+
+  let backendError = err?.error;
+
+  if (typeof backendError === 'string') {
+    try {
+      const parsed = JSON.parse(backendError);
+      this.errorMessage = parsed?.message ?? backendError;
+    } catch {
+      this.errorMessage = backendError;
+    }
+    return;
+  }
+
+  if (backendError?.message) {
+    this.errorMessage = backendError.message;
+  } else {
+    this.errorMessage = 'Registration failed.';
+  }
+}
+
+
     });
   }
 }

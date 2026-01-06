@@ -41,6 +41,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb-reactive</artifactId>
         </dependency>
+		<!-- Spring Boot Actuator -->
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
 
         <!-- Kafka -->
         <dependency>
@@ -110,6 +115,18 @@
             <artifactId>reactor-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Resilience4j Circuit Breaker -->
+<dependency>
+    <groupId>io.github.resilience4j</groupId>
+    <artifactId>resilience4j-spring-boot3</artifactId>
+</dependency>
+
+<!-- Resilience4j Reactor support (for Mono / Flux) -->
+<dependency>
+    <groupId>io.github.resilience4j</groupId>
+    <artifactId>resilience4j-reactor</artifactId>
+</dependency>
+
 
     </dependencies>
 

@@ -18,62 +18,50 @@ import com.files.util.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
+
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    private final UserRepository repo;
-    private final PasswordEncoder encoder;
-    private final JwtUtil jwtUtil;
+	private final UserRepository repo;
+	private final PasswordEncoder encoder;
+	private final JwtUtil jwtUtil;
 
-    private static final Set<Role> PUBLIC_ROLES =
-            Set.of(Role.USER, Role.AGENT, Role.MANAGER);
+	private static final Set<Role> PUBLIC_ROLES = Set.of(Role.USER, Role.AGENT, Role.MANAGER);
 
-    @Override
-    public Mono<AuthResponse> login(LoginRequest request) {
+	@Override
+	public Mono<AuthResponse> login(LoginRequest request) {
 
-        return repo.findByEmail(request.getEmail())
-            .filter(User::isActive)
-            .filter(u -> encoder.matches(request.getPassword(), u.getPassword()))
-            .switchIfEmpty(Mono.error(new BusinessException("Invalid credentials")))
-            .map(user -> new AuthResponse(jwtUtil.generateToken(user)));
-    }
+	    return repo.findByEmail(request.getEmail())
+	        .switchIfEmpty(Mono.error(new BusinessException("User does not exist")))
 
-    @Override
-    public Mono<UserResponse> register(RegisterRequest request) {
+	        .filter(User::isActive)
+	        .switchIfEmpty(Mono.error(new BusinessException("User account is inactive")))
 
-        return repo.existsByEmail(request.getEmail())
-            .flatMap(exists -> exists
-                ? Mono.<UserResponse>error(
-                    new BusinessException("Email already exists")
-                  )
-                : repo.save(
-                    User.builder()
-                        .name(request.getName())
-                        .email(request.getEmail())
-                        .password(encoder.encode(request.getPassword()))
-                        .roles(Set.of(Role.USER))
-                        .active(true)
-                        .build()
-                  ).map(u -> UserResponse.from(u))
-            );
-    }
+	        .filter(user -> encoder.matches(request.getPassword(), user.getPassword()))
+	        .switchIfEmpty(Mono.error(new BusinessException("Incorrect password")))
 
-    @Override
-    public Mono<UserResponse> registerAdmin(RegisterRequest request) {
-  return repo.existsByEmail(request.getEmail())
-            .flatMap(exists -> exists
-                ? Mono.error(new BusinessException("Email already exists"))
-                : repo.save(
-                    User.builder()
-                        .name(request.getName())
-                        .email(request.getEmail())
-                        .password(encoder.encode(request.getPassword()))
-                        .roles(Set.of(Role.ADMIN))
-                        .active(true)
-                        .build()
-                  ).map(UserResponse::from)
-            );
-    }
+	        .map(user -> new AuthResponse(jwtUtil.generateToken(user)));
+	}
+
+
+	@Override
+	public Mono<UserResponse> register(RegisterRequest request) {
+
+		return repo.existsByEmail(request.getEmail()).flatMap(exists -> exists
+				? Mono.<UserResponse>error(new BusinessException("Email already exists"))
+				: repo.save(User.builder().name(request.getName()).email(request.getEmail())
+						.password(encoder.encode(request.getPassword())).roles(Set.of(Role.USER)).active(true).build())
+						.map(u -> UserResponse.from(u)));
+	}
+
+	@Override
+	public Mono<UserResponse> registerAdmin(RegisterRequest request) {
+		return repo.existsByEmail(request.getEmail()).flatMap(exists -> exists
+				? Mono.error(new BusinessException("Email already exists"))
+				: repo.save(User.builder().name(request.getName()).email(request.getEmail())
+						.password(encoder.encode(request.getPassword())).roles(Set.of(Role.ADMIN)).active(true).build())
+						.map(UserResponse::from));
+	}
 
 }

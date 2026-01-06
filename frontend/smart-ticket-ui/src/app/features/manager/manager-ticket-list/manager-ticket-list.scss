@@ -1,0 +1,81 @@
+/* Page spacing */
+.container-fluid {
+  padding-top: 28px;
+  padding-bottom: 24px;
+  background-color: #f8fafc;
+  min-height: calc(100vh - 72px);
+}
+
+/* Filter card */
+.card {
+  border-radius: 12px;
+}
+
+.card-body {
+  padding: 20px 22px;
+}
+
+/* Table */
+.table {
+  font-size: 0.95rem;
+}
+
+.table thead th {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 16px;
+}
+
+.table tbody td {
+  padding: 18px 16px;
+  vertical-align: middle;
+}
+
+/* Row separation */
+.table tbody tr {
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.table tbody tr:hover {
+  background-color: #f8fafc;
+  transform: translateY(-1px);
+}
+
+/* Ticket title */
+.table a {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #2563eb;
+  text-decoration: none;
+}
+.container-fluid > .card,
+.container-fluid > h3,
+.container-fluid > .d-flex {
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.table a:hover {
+  text-decoration: underline;
+}
+
+/* Badges */
+.badge {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+
+/* Pagination */
+button.btn-outline-secondary {
+  padding: 8px 16px;
+  font-weight: 500;
+}
+
+/* Page number */
+.text-muted {
+  font-size: 0.9rem;
+}

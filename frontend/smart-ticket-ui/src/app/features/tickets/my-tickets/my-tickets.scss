@@ -1,12 +1,128 @@
 .my-tickets {
-  padding-top: 20px;
+  padding-top: 28px;
+  display: flex;
+  justify-content: center;
+  animation: pageFade 0.3s ease;
 }
 
-.card {
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+.content-shell {
+  width: 100%;
+  max-width: 1120px;
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+.filters-bar {
+  background: #ffffff;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.filters-bar .form-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.filters-bar .form-select {
+  padding: 10px 12px;
+  font-size: 0.95rem;
+}
+
+.state-container {
+  text-align: center;
+  padding: 80px 0;
+}
+
+.empty-icon {
+  font-size: 3.6rem;
+  color: #cbd5e1;
+}
+
+.ticket-table {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  animation: tableFade 0.25s ease;
+}
+
+.ticket-table th {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+  background-color: #f8fafc;
+  padding: 14px 16px;
+}
+
+.ticket-table td {
+  vertical-align: top;
+  padding: 16px;
+  font-size: 0.95rem;
+}
+
+.ticket-table tbody tr {
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.ticket-table tbody tr:hover {
+  background-color: #f8fafc;
+  transform: translateY(-1px);
+}
+
+.ticket-link {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.ticket-link:hover {
+  text-decoration: underline;
+}
+
+.ticket-table .text-muted.small {
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.status-pill {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.status-pill.created {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.status-pill.assigned {
+  background: #fff7ed;
+  color: #92400e;
+}
+
+.status-pill.in_progress {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.status-pill.resolved {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.status-pill.closed {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.priority-pill {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background-color: #eef2ff;
+  color: #1d4ed8;
 }

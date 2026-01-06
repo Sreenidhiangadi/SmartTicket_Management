@@ -1,10 +1,42 @@
 .login-page {
-  min-height: calc(100vh - 56px); // navbar height
-  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  min-height: calc(100vh - 72px);
+  background: linear-gradient(135deg, #f8f9fa, #eef2f7);
 }
 
 .login-card {
   width: 100%;
   max-width: 400px;
-  border-radius: 12px;
+  border-radius: 14px;
+  border: none;
+  animation: fadeInUp 0.35s ease;
+}
+
+.auth-icon {
+  font-size: 2.6rem;
+  color: #0d6efd;
+}
+
+.form-control {
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.form-control:focus {
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+button.btn {
+  padding: 10px;
+  font-weight: 600;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
