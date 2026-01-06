@@ -34,4 +34,9 @@ public class ReportsController {
     public Flux<SlaBreachReport> slaBreaches() {
         return reportService.slaBreaches();
     }
+
+    @GetMapping("/summary")
+    public Mono<ReportSummaryDto> summary() {
+        return reportService.summary();
+    }
 }
