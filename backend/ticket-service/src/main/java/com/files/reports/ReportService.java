@@ -13,4 +13,7 @@ public interface ReportService {
     Mono<AvgResolutionTimeReport> avgResolutionTime();
 
     Flux<SlaBreachReport> slaBreaches();
+    
+    Mono<ReportSummaryDto> summary();
+
 }
