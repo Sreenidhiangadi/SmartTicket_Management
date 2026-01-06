@@ -13,18 +13,12 @@ export class ReportsService {
     getSummary(): Observable<any> {
         return this.http.get<any>(`${this.baseUrl}/summary`);}
 
-  // Doughnut chart
+
   statusReport(): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/tickets-by-status`);
   }
-
-  // Bar chart
   priorityReport(): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/tickets-by-priority`);
   }
 
-  // Line chart
-  slaTrend(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/sla-trend`);
-  }
 }
