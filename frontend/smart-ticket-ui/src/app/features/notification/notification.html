@@ -1,0 +1,67 @@
+<!-- NAVBAR MODE -->
+<div *ngIf="mode === 'navbar'" class="nav-item dropdown">
+  <a
+    class="nav-link position-relative"
+    role="button"
+    data-bs-toggle="dropdown"
+  >
+    <i class="bi bi-bell fs-5"></i>
+
+    <span *ngIf="unreadCount > 0" class="badge bg-danger notification-badge">
+      {{ unreadCount }}
+    </span>
+  </a>
+
+  <ul class="dropdown-menu dropdown-menu-end notification-menu">
+    <li class="dropdown-header fw-semibold">Notifications</li>
+
+    <li *ngIf="loading" class="dropdown-item text-center">Loading…</li>
+
+    <li *ngIf="!loading && notifications.length === 0"
+        class="dropdown-item text-muted">
+      No notifications
+    </li>
+
+    <li *ngFor="let n of notifications">
+      <div class="dropdown-item notification-item">
+        <i class="bi me-2" [ngClass]="iconFor(n.type)"></i>
+
+        <div class="content">
+          <div class="title">{{ n.title }}</div>
+          <div class="message">{{ n.message }}</div>
+          <small class="text-muted">
+            {{ n.createdAt | date:'short' }}
+          </small>
+        </div>
+
+        <span *ngIf="!n.read" class="unread-dot"></span>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- PROFILE MODE -->
+<div *ngIf="mode === 'profile'" class="notification-list">
+
+  <div *ngIf="loading" class="text-center py-3">Loading…</div>
+
+  <div *ngIf="!loading && notifications.length === 0"
+       class="text-muted text-center py-3">
+    No notifications
+  </div>
+
+  <div *ngFor="let n of notifications" class="notification-item">
+    <i class="bi me-2" [ngClass]="iconFor(n.type)"></i>
+
+    <div class="content">
+      <div class="title">{{ n.title }}</div>
+      <div class="message">{{ n.message }}</div>
+      <small class="text-muted">
+        {{ n.createdAt | date:'short' }}
+      </small>
+    </div>
+
+    <span *ngIf="!n.read" class="unread-dot"></span>
+  </div>
+
+</div>
