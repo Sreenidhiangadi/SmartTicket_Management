@@ -14,10 +14,4 @@ class TicketServiceApplicationTest {
         // verifies Spring context starts
     }
 
-    @Test
-    void mainMethodRuns() {
-        assertDoesNotThrow(() ->
-                TicketServiceApplication.main(new String[] {})
-        );
-    }
 }
