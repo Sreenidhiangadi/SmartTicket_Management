@@ -1,134 +1,170 @@
-<div class="container-fluid px-4" *ngIf="!loading && ticket">
+<div class="container-fluid px-4 ticket-details" *ngIf="!loading && ticket">
+  <div class="content-shell">
 
-  <!-- HEADER -->
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="fw-bold">{{ ticket.title }}</h4>
-    <span class="badge bg-secondary">{{ ticket.status }}</span>
-  </div>
-
-  <p class="text-muted">{{ ticket.description }}</p>
-
-  <div class="mb-3">
-    <span class="badge bg-info me-2">{{ ticket.priority }}</span>
-    <small class="text-muted">
-      Created: {{ ticket.createdAt | date:'short' }}
-    </small>
-  </div>
-<div *ngIf="ticket.assignedTo" class="text-muted small mb-3">
-  Assigned to:
-  <strong>{{ getAssignedAgentName() }}</strong>
-</div>
-
-  <!-- MANAGER ACTIONS -->
-  <div class="mb-4" *ngIf="isManager()">
-
-    <!-- Assign / Reassign -->
-    <div class="d-flex align-items-center gap-2 mb-2">
-      <select
-        class="form-select w-auto"
-        [(ngModel)]="selectedAgentId"
-      >
-        <option value="" disabled>Select agent</option>
-        <option *ngFor="let a of agents" [value]="a.id">
-          {{ a.name }}
-        </option>
-      </select>
-
- <button
-  class="btn btn-outline-primary"
-  (click)="assign()"
-  [disabled]="
-    !selectedAgentId ||
-    ticket.status === 'CLOSED' ||
-    selectedAgentId === ticket.assignedTo
-  "
->
-  {{ ticket.assignedTo ? 'Reassign' : 'Assign' }}
-</button>
-
-    </div>
-
-    <!-- Reopen -->
-    <button
-      *ngIf="ticket.status === 'RESOLVED' || ticket.status === 'CLOSED'"
-      class="btn btn-outline-warning"
-      (click)="reopen()"
-    >
-      Reopen Ticket
-    </button>
-
-  </div>
-
-  <!-- AGENT ACTIONS -->
-  <div class="mb-4" *ngIf="hasRole('AGENT')">
-
-    <button
-      *ngIf="ticket.status === 'ASSIGNED'"
-      class="btn btn-outline-primary me-2"
-      (click)="start()">
-      Start
-    </button>
-
-    <button
-      *ngIf="ticket.status === 'IN_PROGRESS'"
-      class="btn btn-outline-success me-2"
-      (click)="resolve()">
-      Resolve
-    </button>
-
-    <button
-      *ngIf="ticket.status === 'RESOLVED'"
-      class="btn btn-outline-danger"
-      (click)="close()">
-      Close
-    </button>
-
-  </div>
-
-  <!-- TIMELINE -->
-  <h5>Timeline</h5>
-  <ul class="list-group mb-4">
-    <li class="list-group-item" *ngFor="let e of timeline">
-      <strong>{{ e.action }}</strong>
-      <small class="text-muted float-end">
-        {{ e.timestamp | date:'short' }}
-      </small>
-    </li>
-  </ul>
-
-  <!-- COMMENTS -->
-  <h5>Comments</h5>
-
-  <div class="mb-3" *ngFor="let c of comments">
-    <div class="border rounded p-3">
-
-      <div class="d-flex justify-content-between">
-        <small class="fw-bold">
-          {{ c.commentedBy }}
-          <span class="badge bg-secondary ms-1">
-            {{ c.role }}
-          </span>
-        </small>
-
-        <small class="text-muted">
-          {{ c.commentedAt | date:'short' }}
-        </small>
+    <!-- HEADER -->
+    <div class="header-bar mb-4">
+      <div>
+        <h4 class="fw-bold mb-1">
+          <i class="bi bi-ticket-detailed me-2"></i>
+          {{ ticket.title }}
+        </h4>
+        <p class="text-muted mb-0">{{ ticket.description }}</p>
       </div>
 
-      <p class="mb-0 mt-2">
-        {{ c.comment }}
-      </p>
-
+      <span
+        class="status-pill"
+        [ngClass]="ticket.status.toLowerCase()"
+      >
+        {{ ticket.status }}
+      </span>
     </div>
-  </div>
 
-  <!-- ADD COMMENT -->
-  <div
-    class="card mb-4"
-    *ngIf="ticket.status !== 'CLOSED'"
-  >
-    <div class="card-body">
+    <!-- META -->
+    <div class="meta-row mb-4">
+      <span class="priority-pill">
+        <i class="bi bi-flag me-1"></i>
+        {{ ticket.priority }}
+      </span>
 
+      <span class="text-muted small">
+        <i class="bi bi-clock me-1"></i>
+        Created {{ ticket.createdAt | date:'short' }}
+      </span>
+    </div>
+
+    <div *ngIf="ticket.assignedTo" class="assigned-box mb-4">
+      <i class="bi bi-person-check me-1"></i>
+      Assigned to <strong>{{ getAssignedAgentName() }}</strong>
+    </div>
+
+    <!-- MANAGER ACTIONS -->
+    <div class="action-section" *ngIf="isManager()">
+      <h6 class="section-title">
+        <i class="bi bi-gear me-1"></i>
+        Manager Actions
+      </h6>
+
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <select
+          class="form-select w-auto"
+          [(ngModel)]="selectedAgentId"
+        >
+          <option value="" disabled>Select agent</option>
+          <option *ngFor="let a of agents" [value]="a.id">
+            {{ a.name }}
+          </option>
+        </select>
+
+        <button
+          class="btn btn-outline-primary"
+          (click)="assign()"
+          [disabled]="
+            !selectedAgentId ||
+            ticket.status === 'CLOSED' ||
+            selectedAgentId === ticket.assignedTo
+          "
+        >
+          <i class="bi bi-arrow-repeat me-1"></i>
+          {{ ticket.assignedTo ? 'Reassign' : 'Assign' }}
+        </button>
+      </div>
+
+      <button
+        *ngIf="ticket.status === 'RESOLVED' || ticket.status === 'CLOSED'"
+        class="btn btn-outline-warning"
+        (click)="reopen()"
+      >
+        <i class="bi bi-arrow-counterclockwise me-1"></i>
+        Reopen Ticket
+      </button>
+    </div>
+
+    <!-- AGENT ACTIONS -->
+    <div class="action-section" *ngIf="hasRole('AGENT')">
+      <h6 class="section-title">
+        <i class="bi bi-person-badge me-1"></i>
+        Agent Actions
+      </h6>
+
+      <button
+        *ngIf="ticket.status === 'ASSIGNED'"
+        class="btn btn-outline-primary me-2"
+        (click)="start()"
+      >
+        <i class="bi bi-play me-1"></i>
+        Start
+      </button>
+
+      <button
+        *ngIf="ticket.status === 'IN_PROGRESS'"
+        class="btn btn-outline-success me-2"
+        (click)="resolve()"
+      >
+        <i class="bi bi-check-circle me-1"></i>
+        Resolve
+      </button>
+
+      <button
+        *ngIf="ticket.status === 'RESOLVED'"
+        class="btn btn-outline-danger"
+        (click)="close()"
+      >
+        <i class="bi bi-lock me-1"></i>
+        Close
+      </button>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="section">
+      <h6 class="section-title">
+        <i class="bi bi-clock-history me-1"></i>
+        Timeline
+      </h6>
+
+      <ul class="timeline">
+        <li *ngFor="let e of timeline">
+          <span class="timeline-dot"></span>
+          <div class="timeline-content">
+            <strong>{{ e.action }}</strong>
+            <small class="text-muted d-block">
+              {{ e.timestamp | date:'short' }}
+            </small>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- COMMENTS -->
+    <div class="section">
+      <h6 class="section-title">
+        <i class="bi bi-chat-left-text me-1"></i>
+        Comments
+      </h6>
+
+      <div class="comment-box" *ngFor="let c of comments">
+        <div class="d-flex justify-content-between">
+          <small class="fw-bold">
+            {{ c.commentedBy }}
+            <span class="badge bg-secondary ms-1">
+              {{ c.role }}
+            </span>
+          </small>
+          <small class="text-muted">
+            {{ c.commentedAt | date:'short' }}
+          </small>
+        </div>
+
+        <p class="mb-0 mt-2">
+          {{ c.comment }}
+        </p>
+      </div>
+    </div>
+
+    <!-- ADD COMMENT -->
+    <div
+      class="section add-comment"
+      *ngIf="ticket.status !== 'CLOSED'"
+    >
       <label class="form-label fw-semibold">
         Add a comment
       </label>
@@ -145,11 +181,11 @@
         [disabled]="submittingComment || !newComment.trim()"
         (click)="addComment()"
       >
+        <i class="bi bi-send me-1"></i>
         <span *ngIf="!submittingComment">Post Comment</span>
         <span *ngIf="submittingComment">Posting...</span>
       </button>
-
     </div>
-  </div>
 
+  </div>
 </div>
