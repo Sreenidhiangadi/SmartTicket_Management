@@ -42,9 +42,22 @@
 }
 
 .chart-card {
-  padding: 20px;
+  padding: 18px 20px 16px;
   border: none;
   box-shadow: 0 6px 18px rgba(0,0,0,.06);
+  border-radius: 14px;
+  max-width: 520px;
+  margin: 0 auto;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+
+.chart-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0,0,0,.08);
+}
+.chart-card canvas {
+  max-height: 220px;
 }
 
 .fade-in {
