@@ -1,22 +1,25 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {FormBuilder,FormGroup,Validators,ReactiveFormsModule} from '@angular/forms';
-import { Router } from '@angular/router';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule
+} from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './register.html',
   styleUrls: ['./register.scss']
 })
 export class RegisterComponent {
-
   registerForm: FormGroup;
   loading = false;
   errorMessage: string | null = null;
-  backendErrors: Record<string, string> | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -30,7 +33,7 @@ export class RegisterComponent {
     });
   }
 
-  submit(): void {
+  onSubmit(): void {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
       return;
@@ -38,35 +41,18 @@ export class RegisterComponent {
 
     this.loading = true;
     this.errorMessage = null;
-    this.backendErrors = null;
 
     this.authService.register(this.registerForm.value).subscribe({
       next: () => {
         this.loading = false;
         this.router.navigate(['/login']);
       },
-error: err => {
-  this.loading = false;
-  if (err?.error && typeof err.error === 'object' && err.error.message) {
-    this.errorMessage = err.error.message;
-    return;
-  }
-  if (typeof err?.error === 'string') {
-    try {
-      const parsed = JSON.parse(err.error);
-      if (parsed.message) {
-        this.errorMessage = parsed.message;
-        return;
+      error: err => {
+        this.loading = false;
+        this.errorMessage =
+          err?.error?.message ||
+          (typeof err?.error === 'string' ? err.error : 'Registration failed.');
       }
-      this.errorMessage = err.error;
-      return;
-    } catch {
-      this.errorMessage = err.error;
-      return;
-    }
-  }
-  this.errorMessage = 'Registration failed.';
-}
     });
   }
 }
