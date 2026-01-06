@@ -29,7 +29,18 @@ public class ReportServiceImpl implements ReportService {
                                 .map(count -> new TicketsByStatusReport(status, count))
                 );
     }
-
+    @Override
+    public Mono<ReportSummaryDto> summary() {
+        return Mono.zip(
+                ticketRepository.count().defaultIfEmpty(0L),
+                ticketRepository.countByStatus(TicketStatus.RESOLVED).defaultIfEmpty(0L),
+                ticketRepository.countByStatus(TicketStatus.IN_PROGRESS).defaultIfEmpty(0L)
+        ).map(tuple -> new ReportSummaryDto(
+                tuple.getT1(),
+                tuple.getT2(),
+                tuple.getT3()
+        ));
+    }
     @Override
     public Flux<TicketsByPriorityReport> ticketsByPriority() {
         return Flux.fromArray(TicketPriority.values())
