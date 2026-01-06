@@ -1,10 +1,11 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { finalize } from 'rxjs/operators';
-
 import { AgentService } from '../agent.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { RouterModule } from '@angular/router';
+import { ToastService } from '../../../core/ui/toast/toast.service';
+import { TicketService } from '../../tickets/ticket.service';
 
 @Component({
   selector: 'app-agent-queue',
@@ -22,7 +23,9 @@ export class AgentQueueComponent implements OnInit {
   constructor(
     private agentService: AgentService,
     private auth: AuthService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toast: ToastService,
+    private ticketService: TicketService
   ) {}
 
   ngOnInit(): void {
@@ -47,30 +50,51 @@ export class AgentQueueComponent implements OnInit {
       .subscribe({
         next: res => {
           this.tickets = res;
+          this.cdr.detectChanges();
         },
         error: () => {
           this.error = 'Failed to load ticket queue';
+          this.cdr.detectChanges();
         }
       });
   }
 
-  startWork(ticket: any): void {
-    this.updateAndReload(() =>
-      this.agentService.updateStatus(ticket.id, 'IN_PROGRESS')
-    );
-  }
+startWork(ticket: any): void {
+  this.ticketService.updateStatus(ticket.id, 'IN_PROGRESS').subscribe({
+    next: () => {
+      this.toast.show('Ticket marked as In Progress');
+      this.loadQueue();
+    },
+    error: () => {
+      this.toast.show('Failed to start ticket', 'error');
+    }
+  });
+}
 
-  resolve(ticket: any): void {
-    this.updateAndReload(() =>
-      this.agentService.updateStatus(ticket.id, 'RESOLVED')
-    );
-  }
+resolve(ticket: any): void {
+  this.ticketService.updateStatus(ticket.id, 'RESOLVED').subscribe({
+    next: () => {
+      this.toast.show('Ticket resolved successfully');
+      this.loadQueue();
+    },
+    error: () => {
+      this.toast.show('Failed to resolve ticket', 'error');
+    }
+  });
+}
 
-  close(ticket: any): void {
-    this.updateAndReload(() =>
-      this.agentService.closeTicket(ticket.id)
-    );
-  }
+close(ticket: any): void {
+  this.ticketService.close(ticket.id).subscribe({
+    next: () => {
+      this.toast.show('Ticket closed');
+      this.loadQueue();
+    },
+    error: () => {
+      this.toast.show('Failed to close ticket', 'error');
+    }
+  });
+}
+
 
   private updateAndReload(action: () => any): void {
     this.loading = true;
