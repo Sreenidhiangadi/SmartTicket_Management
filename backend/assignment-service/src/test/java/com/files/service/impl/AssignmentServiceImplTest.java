@@ -1,176 +1,137 @@
 package com.files.service.impl;
 
-import com.files.dto.AgentDto;
-import com.files.dto.response.AutoAssignmentResponse;
-import com.files.exception.AssignmentAlreadyExistsException;
-import com.files.model.Assignment;
-import com.files.repository.AssignmentRepository;
-import com.files.repository.EscalationLogRepository;
-import com.files.service.AgentClientService;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.time.Instant;
+import java.util.Set;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import com.files.dto.AgentDto;
+import com.files.exception.AssignmentAlreadyExistsException;
+import com.files.model.Assignment;
+import com.files.repository.AssignmentRepository;
+import com.files.repository.EscalationLogRepository;
+import com.files.service.AgentClientService;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Set;
-
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class AssignmentServiceImplTest {
 
-    @Mock
-    AssignmentRepository assignmentRepository;
+	@Mock
+	AssignmentRepository assignmentRepository;
 
-    @Mock
-    EscalationLogRepository escalationLogRepository;
+	@Mock
+	EscalationLogRepository escalationLogRepository;
 
-    @Mock
-    AgentClientService agentClientService;
+	@Mock
+	AgentClientService agentClientService;
 
-    @Mock
-    WebClient ticketWebClient;
+	@Mock
+	WebClient ticketWebClient;
 
-    @InjectMocks
-    AssignmentServiceImpl service;
+	@InjectMocks
+	AssignmentServiceImpl service;
 
-    Assignment assignment;
+	Assignment assignment;
 
-    @BeforeEach
-    void setup() {
-        assignment = Assignment.builder()
-                .ticketId("t1")
-                .agentId("a1")
-                .priority("MEDIUM")
-                .slaDueAt(Instant.now().minusSeconds(60))
-                .escalated(false)
-                .build();
-    }
+	@BeforeEach
+	void setup() {
+		assignment = Assignment.builder().ticketId("t1").agentId("a1").priority("MEDIUM")
+				.slaDueAt(Instant.now().minusSeconds(60)).escalated(false).build();
+	}
 
-    @Test
-    void assignTicket_success() {
-        when(assignmentRepository.findByTicketId("t1"))
-                .thenReturn(Mono.empty());
-        when(assignmentRepository.save(any()))
-                .thenAnswer(i -> Mono.just(i.getArgument(0)));
+	@Test
+	void assignTicket_success() {
+		when(assignmentRepository.findByTicketId("t1")).thenReturn(Mono.empty());
+		when(assignmentRepository.save(any())).thenAnswer(i -> Mono.just(i.getArgument(0)));
 
-        StepVerifier.create(service.assignTicket("t1", "a1", "HIGH"))
-                .expectNextCount(1)
-                .verifyComplete();
-    }
-    @Test
-    void assignTicket_alreadyExists() {
-        when(assignmentRepository.findByTicketId("t1"))
-                .thenReturn(Mono.just(assignment));
+		StepVerifier.create(service.assignTicket("t1", "a1", "HIGH")).expectNextCount(1).verifyComplete();
+	}
 
-        StepVerifier.create(service.assignTicket("t1", "a1", "HIGH"))
-                .expectError(AssignmentAlreadyExistsException.class)
-                .verify();
-    }
+	@Test
+	void assignTicket_alreadyExists() {
+		when(assignmentRepository.findByTicketId("t1")).thenReturn(Mono.just(assignment));
 
-    @Test
-    void autoAssign_success() {
-        when(assignmentRepository.findByTicketId("t1"))
-                .thenReturn(Mono.empty());
+		StepVerifier.create(service.assignTicket("t1", "a1", "HIGH"))
+				.expectError(AssignmentAlreadyExistsException.class).verify();
+	}
 
-        AgentDto a1 = new AgentDto();
-        a1.setId("a1");
-        a1.setActive(true);
+	@Test
+	void autoAssign_success() {
+		when(assignmentRepository.findByTicketId("t1")).thenReturn(Mono.empty());
 
-        AgentDto a2 = new AgentDto();
-        a2.setId("a2");
-        a2.setActive(true);
+		AgentDto a1 = new AgentDto();
+		a1.setId("a1");
+		a1.setActive(true);
 
-        when(agentClientService.fetchActiveAgents())
-                .thenReturn(Flux.just(a1, a2));
+		AgentDto a2 = new AgentDto();
+		a2.setId("a2");
+		a2.setActive(true);
 
-        when(assignmentRepository.findAll())
-                .thenReturn(Flux.empty());
+		when(agentClientService.fetchActiveAgents()).thenReturn(Flux.just(a1, a2));
 
-        when(assignmentRepository.save(any()))
-                .thenAnswer(i -> Mono.just(i.getArgument(0)));
+		when(assignmentRepository.findAll()).thenReturn(Flux.empty());
 
-        StepVerifier.create(service.autoAssign("t1", null))
-                .expectNextMatches(resp ->
-                        resp.getTicketId().equals("t1")
-                )
-                .verifyComplete();
-    }
+		when(assignmentRepository.save(any())).thenAnswer(i -> Mono.just(i.getArgument(0)));
 
-    @Test
-    void autoAssign_alreadyExists() {
-        when(assignmentRepository.findByTicketId("t1"))
-                .thenReturn(Mono.just(assignment));
+		StepVerifier.create(service.autoAssign("t1", null)).expectNextMatches(resp -> resp.getTicketId().equals("t1"))
+				.verifyComplete();
+	}
 
-        StepVerifier.create(service.autoAssign("t1", "LOW"))
-                .expectError(AssignmentAlreadyExistsException.class)
-                .verify();
-    }
+	@Test
+	void autoAssign_alreadyExists() {
+		when(assignmentRepository.findByTicketId("t1")).thenReturn(Mono.just(assignment));
 
-    @Test
-    void escalate_success() {
-        Jwt jwt = Jwt.withTokenValue("token")
-                .header("alg", "none")
-                .subject("admin")
-                .build();
+		StepVerifier.create(service.autoAssign("t1", "LOW")).expectError(AssignmentAlreadyExistsException.class)
+				.verify();
+	}
 
-        JwtAuthenticationToken auth =
-                new JwtAuthenticationToken(jwt, Set.of());
+	@Test
+	void escalate_success() {
+		Jwt jwt = Jwt.withTokenValue("token").header("alg", "none").subject("admin").build();
 
-        assignment.setEscalated(false);
+		JwtAuthenticationToken auth = new JwtAuthenticationToken(jwt, Set.of());
 
-        when(assignmentRepository.save(any()))
-                .thenReturn(Mono.just(assignment));
+		assignment.setEscalated(false);
 
-        when(escalationLogRepository.save(any()))
-                .thenReturn(Mono.empty());
+		when(assignmentRepository.save(any())).thenReturn(Mono.just(assignment));
 
-        WebClient.RequestBodyUriSpec bodyUriSpec =
-                mock(WebClient.RequestBodyUriSpec.class);
-        WebClient.RequestBodySpec bodySpec =
-                mock(WebClient.RequestBodySpec.class);
-        WebClient.ResponseSpec responseSpec =
-                mock(WebClient.ResponseSpec.class);
-        doReturn(bodyUriSpec).when(ticketWebClient).put();
+		when(escalationLogRepository.save(any())).thenReturn(Mono.empty());
 
-        doReturn(bodySpec)
-                .when(bodyUriSpec)
-                .uri(anyString(), any(Object[].class));
+		WebClient.RequestBodyUriSpec bodyUriSpec = mock(WebClient.RequestBodyUriSpec.class);
+		WebClient.RequestBodySpec bodySpec = mock(WebClient.RequestBodySpec.class);
+		WebClient.ResponseSpec responseSpec = mock(WebClient.ResponseSpec.class);
+		doReturn(bodyUriSpec).when(ticketWebClient).put();
 
-        doReturn(bodySpec)
-                .when(bodySpec)
-                .header(anyString(), anyString());
+		doReturn(bodySpec).when(bodyUriSpec).uri(anyString(), any(Object[].class));
 
-        doReturn(responseSpec)
-                .when(bodySpec)
-                .retrieve();
+		doReturn(bodySpec).when(bodySpec).header(anyString(), anyString());
 
-        doReturn(Mono.empty())
-                .when(responseSpec)
-                .bodyToMono(Void.class);
+		doReturn(responseSpec).when(bodySpec).retrieve();
 
-        StepVerifier.create(
-                service.escalate(assignment, "SLA")
-                        .contextWrite(
-                                ReactiveSecurityContextHolder.withAuthentication(auth)
-                        )
-        )
-        .assertNext(a -> org.junit.jupiter.api.Assertions.assertTrue(a.isEscalated()))
-        .verifyComplete();
-    }
+		doReturn(Mono.empty()).when(responseSpec).bodyToMono(Void.class);
 
-
-
+		StepVerifier
+				.create(service.escalate(assignment, "SLA")
+						.contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth)))
+				.assertNext(a -> org.junit.jupiter.api.Assertions.assertTrue(a.isEscalated())).verifyComplete();
+	}
 
 }

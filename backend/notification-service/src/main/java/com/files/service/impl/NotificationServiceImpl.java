@@ -11,7 +11,7 @@ import com.files.model.NotificationType;
 import com.files.repository.NotificationRepository;
 import com.files.service.NotificationService;
 
-import jakarta.annotation.PostConstruct;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -25,6 +25,10 @@ public class NotificationServiceImpl implements NotificationService {
     private final JavaMailSender mailSender;
 
     @Override
+    @CircuitBreaker(
+        name = "notificationServiceCB",
+        fallbackMethod = "notifyUserFallback"
+    )
     public Mono<Void> notifyUser(
             String userId,
             String email,
@@ -46,34 +50,46 @@ public class NotificationServiceImpl implements NotificationService {
                 .then(sendEmail(email, title, message));
     }
 
+    /**
+     * Fallback method when circuit breaker is OPEN or email fails.
+     * Signature MUST match original method + Throwable at the end.
+     */
+    private Mono<Void> notifyUserFallback(
+            String userId,
+            String email,
+            NotificationType type,
+            String title,
+            String message,
+            Throwable ex) {
+
+        log.error("Notification service fallback triggered. Email skipped.", ex);
+
+        Notification fallbackNotification = new Notification(
+                null,
+                userId,
+                type,
+                title,
+                message + " (email delivery pending)",
+                false,
+                Instant.now()
+        );
+
+        return notificationRepository.save(fallbackNotification).then();
+    }
+
     private Mono<Void> sendEmail(String email, String subject, String body) {
         return Mono.fromRunnable(() -> {
-        	if (email == null || email.isBlank()) {
-        	    log.warn("Skipping email notification: recipient email is null");
-        	    return;
-        	}
+            if (email == null || email.isBlank()) {
+                log.warn("Skipping email notification: recipient email is null");
+                return;
+            }
+
             SimpleMailMessage mail = new SimpleMailMessage();
-            mail.setTo(email);   
+            mail.setTo(email);
             mail.setSubject(subject);
             mail.setText(body);
+
             mailSender.send(mail);
         });
     }
-
-//    @PostConstruct
-//    public void testMail() {
-//        try {
-//            SimpleMailMessage msg = new SimpleMailMessage();
-//            msg.setTo("angadisreenidhi@gmail.com");
-//            msg.setSubject("Test Mail");
-//            msg.setText("If you see this, SMTP works");
-//
-//            mailSender.send(msg);
-//
-//            log.info("SMTP sanity check mail sent successfully");
-//        } catch (Exception e) {
-//            log.error("SMTP sanity check failed", e);
-//        }
-//    }
-
 }

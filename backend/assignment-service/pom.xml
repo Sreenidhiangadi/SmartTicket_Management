@@ -23,6 +23,7 @@
     <properties>
         <java.version>17</java.version>
         <spring-cloud.version>2023.0.1</spring-cloud.version>
+          <sonar.organization>sreenidhiangadi</sonar.organization>
     </properties>
 
     <dependencies>
@@ -102,11 +103,7 @@
         	<groupId>org.springframework.boot</groupId>
         	<artifactId>spring-boot-devtools</artifactId>
         </dependency>
-        <!--<dependency>
-        	<groupId>com.files</groupId>
-        	<artifactId>user-service</artifactId>
-        	<version>0.0.1-SNAPSHOT</version>
-        </dependency>-->
+
     </dependencies>
 
     <dependencyManagement>
