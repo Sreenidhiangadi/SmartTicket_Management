@@ -1,19 +1,92 @@
 .admin-home {
-  padding-top: 20px;
+  padding-top: 28px;
+  animation: fadeIn 0.35s ease;
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.header p {
+  font-size: 0.9rem;
+}
+
+/* KPI Cards */
 .stat-card {
-  border-left: 5px solid #0d6efd;
+  border-radius: 14px;
+  border-left: 5px solid #2563eb;
+  background: #ffffff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.stat-card.border-success {
-  border-left-color: #198754;
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
 
-.stat-card.border-secondary {
-  border-left-color: #6c757d;
+.stat-success {
+  border-left-color: #16a34a;
 }
 
-.stat-card h2 {
-  font-size: 2rem;
+.stat-muted {
+  border-left-color: #6b7280;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.stat-value {
+  font-size: 2.3rem;
+  font-weight: 700;
+}
+
+/* Section Cards */
+.section-card {
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+}
+
+.section-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #374151;
+}
+
+/* Status items */
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.status-item span {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-item.success {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.status-item.success i {
+  color: #16a34a;
 }

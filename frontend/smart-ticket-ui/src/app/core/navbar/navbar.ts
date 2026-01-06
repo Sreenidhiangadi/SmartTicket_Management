@@ -25,14 +25,16 @@ export class NavbarComponent {
   hasRole(role: string): boolean {
     return this.auth.hasRole(role);
   }
-  
+
   goHome(): void {
     if (this.hasRole('ADMIN')) {
       this.router.navigate(['/admin']);
     } else if (this.hasRole('MANAGER')) {
-      this.router.navigate(['/dashboard']);
+      this.router.navigate(['/manager/dashboard']);
     } else if (this.hasRole('AGENT')) {
       this.router.navigate(['/agent/queue']);
+    } else if (this.hasRole('USER')) {
+      this.router.navigate(['/']);
     } else {
       this.router.navigate(['/']);
     }

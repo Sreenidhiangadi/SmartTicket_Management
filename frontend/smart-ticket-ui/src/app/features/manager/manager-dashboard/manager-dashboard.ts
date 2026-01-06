@@ -2,7 +2,7 @@ import { Component, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ManagerDashboardService } from './manager-dashboard.service';
 import { Chart } from 'chart.js/auto';
-
+import { ChangeDetectorRef } from '@angular/core';
 @Component({
   selector: 'app-manager-dashboard',
   standalone: true,
@@ -14,7 +14,7 @@ export class ManagerDashboardComponent implements AfterViewInit {
 
   summary: any;
 
-  constructor(private service: ManagerDashboardService) {}
+  constructor(private service: ManagerDashboardService, private cdr: ChangeDetectorRef) {}
 
   ngAfterViewInit(): void {
     this.loadSummary();
@@ -22,8 +22,13 @@ export class ManagerDashboardComponent implements AfterViewInit {
     this.loadPriorityChart();
   }
 
-  loadSummary() {
-    this.service.getSummary().subscribe(res => this.summary = res);
+loadSummary(): void {
+    this.service.getSummary().subscribe({
+      next: res => {
+        this.summary = res;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
 loadStatusChart() {

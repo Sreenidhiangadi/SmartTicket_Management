@@ -1,7 +1,67 @@
 .create-ticket {
   padding-top: 40px;
+  background-color: #f8fafc;
+  display: flex;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
 }
 
 .create-card {
+  width: 100%;
   max-width: 600px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  background-color: #ffffff;
+}
+
+
+.card-body {
+  padding: 28px;
+}
+
+h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-label {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.form-control,
+.form-select {
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  border-radius: 8px;
+}
+
+.form-control:focus,
+.form-select:focus {
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.12);
+}
+
+textarea {
+  resize: vertical;
+}
+
+.alert {
+  font-size: 0.9rem;
+}
+
+button.btn {
+  padding: 10px;
+  font-weight: 600;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
