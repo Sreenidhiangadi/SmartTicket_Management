@@ -17,6 +17,7 @@ This project implements a full ticket lifecycle used by support teams:
 
 The architecture follows microservice principles with event-driven communication using Kafka.
 
+config server : https://github.com/Sreenidhiangadi/ticket-config-repo
 ---
 
 ## Architecture
