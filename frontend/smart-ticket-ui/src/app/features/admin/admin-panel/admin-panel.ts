@@ -76,5 +76,37 @@ toggleActive(user: any): void {
     .updateUser(user.id, { roles: [role] })
     .subscribe(() => this.loadUsers());
 }
+confirmMessage = '';
+pendingAction: (() => void) | null = null;
+
+openConfirm(message: string, action: () => void) {
+  this.confirmMessage = message;
+  this.pendingAction = action;
+
+  const modal = new (window as any).bootstrap.Modal(
+    document.getElementById('confirmActionModal')
+  );
+  modal.show();
+}
+
+confirmAction() {
+  if (this.pendingAction) {
+    this.pendingAction();
+    this.pendingAction = null;
+  }
+}
+confirmToggle(user: any) {
+  const msg = user.active
+    ? `Are you sure you want to deactivate ${user.name}?`
+    : `Are you sure you want to activate ${user.name}?`;
+
+  this.openConfirm(msg, () => this.toggleActive(user));
+}
+confirmRoleChange(user: any, role: string) {
+  this.openConfirm(
+    `Are you sure you want to change ${user.name}'s role to ${role}?`,
+    () => this.updateRole(user, role)
+  );
+}
 
 }

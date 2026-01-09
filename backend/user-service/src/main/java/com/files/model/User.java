@@ -1,5 +1,6 @@
 package com.files.model;
 
+import java.time.Instant;
 import java.util.Set;
 
 import org.springframework.data.annotation.Id;
@@ -28,4 +29,9 @@ public class User {
     private Set<Role> roles;
 
     private boolean active;
+    
+    private String resetToken;
+    
+    private Instant resetTokenExpiry;
+
 }

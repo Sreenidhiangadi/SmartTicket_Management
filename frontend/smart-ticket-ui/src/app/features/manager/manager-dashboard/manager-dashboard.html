@@ -49,26 +49,38 @@
   </div>
 
   <!-- CHARTS -->
-  <div class="row g-4">
+<div class="row g-4 mb-4">
 
-    <div class="col-md-6">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h6 class="mb-3">Tickets by Status</h6>
-          <canvas id="statusChart"></canvas>
-        </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h6 class="mb-3">Tickets by Status</h6>
+        <canvas id="statusChart"></canvas>
       </div>
     </div>
-
-    <div class="col-md-6">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h6 class="mb-3">Tickets by Priority</h6>
-          <canvas id="priorityChart"></canvas>
-        </div>
-      </div>
-    </div>
-
   </div>
 
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h6 class="mb-3">Tickets by Priority</h6>
+        <canvas id="priorityChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TICKETS OVER TIME (CENTERED) -->
+<div class="row g-4">
+  <div class="col-lg-8 mx-auto">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h6 class="fw-semibold mb-3 text-center">
+          Tickets Over Time
+        </h6>
+        <canvas id="ticketsOverTimeChart"></canvas>
+      </div>
+    </div>
+  </div>
 </div>

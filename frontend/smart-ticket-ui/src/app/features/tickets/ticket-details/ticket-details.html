@@ -10,7 +10,6 @@
         </h4>
         <p class="text-muted mb-0">{{ ticket.description }}</p>
       </div>
-
       <span
         class="status-pill"
         [ngClass]="ticket.status.toLowerCase()"
@@ -32,7 +31,7 @@
       </span>
     </div>
 
-    <div *ngIf="ticket.assignedTo" class="assigned-box mb-4">
+    <div *ngIf="ticket.assignedTo && !hasRole('AGENT')" class="assigned-box mb-4">
       <i class="bi bi-person-check me-1"></i>
       Assigned to <strong>{{ getAssignedAgentName() }}</strong>
     </div>
@@ -68,16 +67,29 @@
           {{ ticket.assignedTo ? 'Reassign' : 'Assign' }}
         </button>
       </div>
-
-      <button
-        *ngIf="ticket.status === 'RESOLVED' || ticket.status === 'CLOSED'"
-        class="btn btn-outline-warning"
-        (click)="reopen()"
-      >
-        <i class="bi bi-arrow-counterclockwise me-1"></i>
-        Reopen Ticket
-      </button>
     </div>
+<!-- <button
+  *ngIf="
+    (hasRole('USER') || hasRole('MANAGER')) &&
+    (ticket.status === 'RESOLVED' || ticket.status === 'CLOSED')
+  "
+  class="btn btn-outline-warning"
+  (click)="reopen()"
+>
+  <i class="bi bi-arrow-counterclockwise me-1"></i>
+  Reopen Ticket
+</button> -->
+<button
+  *ngIf="
+    hasRole('MANAGER') &&
+    (ticket.status === 'RESOLVED' || ticket.status === 'CLOSED')
+  "
+  class="btn btn-outline-warning"
+  (click)="reopen()"
+>
+  <i class="bi bi-arrow-counterclockwise me-1"></i>
+  Reopen Ticket
+</button>
 
     <!-- AGENT ACTIONS -->
     <div class="action-section" *ngIf="hasRole('AGENT')">

@@ -13,4 +13,9 @@ public interface AuthService {
     Mono<UserResponse> registerAdmin(RegisterRequest request);
 
     Mono<UserResponse> register(RegisterRequest request);
+    
+    Mono<Void> processForgotPassword(String email);
+    
+    Mono<Void> resetPassword(String token, String newPassword);
+
 }

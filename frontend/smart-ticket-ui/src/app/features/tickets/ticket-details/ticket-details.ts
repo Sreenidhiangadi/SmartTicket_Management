@@ -39,9 +39,10 @@ export class TicketDetailsComponent implements OnInit {
     if (id) {
       this.loadAll(id);
     }
-    if (this.isManager()) {
+    if (this.isManager()|| this.hasRole('USER')) {
       this.loadAgents();
     }
+
   }
 
   loadAll(id: string): void {
@@ -58,7 +59,9 @@ export class TicketDetailsComponent implements OnInit {
         this.cdr.markForCheck();
       }
     });
+
   }
+
   loadExtras(id: string): void {
     this.ticketService.getTimeline(id).subscribe(res => {
       this.timeline = res;
@@ -178,4 +181,53 @@ addComment(): void {
   hasRole(role: string): boolean {
     return this.auth.hasRole(role);
   }
+  priorities = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+
+changePriority(newPriority: string) {
+  this.ticket.priority = newPriority;
+
+  localStorage.setItem(
+    `ticket-priority-${this.ticket.id}`,
+    newPriority
+  );
+
+  this.toast.show(
+    `Priority changed to ${newPriority}`,
+    'success'
+  );
+}
+
+loadPriority() {
+  const saved = localStorage.getItem(
+    `ticket-priority-${this.ticket.id}`
+  );
+  if (saved) {
+    this.ticket.priority = saved;
+  }
+}
+rating = 0;
+
+rateAgent(value: number) {
+  this.rating = value;
+
+  localStorage.setItem(
+    `ticket-rating-${this.ticket.id}`,
+    value.toString()
+  );
+
+  this.toast.show(
+    `Agent rated ${value} star${value > 1 ? 's' : ''}`,
+    'success'
+  );
+}
+
+loadRating() {
+  const saved = localStorage.getItem(
+    `ticket-rating-${this.ticket.id}`
+  );
+  if (saved) {
+    this.rating = +saved;
+  }
+}
+
 }

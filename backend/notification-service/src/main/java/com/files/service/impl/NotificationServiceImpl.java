@@ -5,7 +5,9 @@ import java.time.Instant;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import com.files.dto.UserResponse;
 import com.files.model.Notification;
 import com.files.model.NotificationType;
 import com.files.repository.NotificationRepository;
@@ -23,12 +25,14 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final JavaMailSender mailSender;
-
+    private final WebClient userServiceWebClient;
     @Override
     @CircuitBreaker(
         name = "notificationServiceCB",
         fallbackMethod = "notifyUserFallback"
     )
+
+
     public Mono<Void> notifyUser(
             String userId,
             String email,
@@ -75,6 +79,15 @@ public class NotificationServiceImpl implements NotificationService {
         );
 
         return notificationRepository.save(fallbackNotification).then();
+    }
+    @Override
+    public Mono<String> getAgentEmail(String agentId) {
+        return userServiceWebClient
+            .get()
+            .uri("/users/internal/{id}", agentId)
+            .retrieve()
+            .bodyToMono(UserResponse.class)
+            .map(UserResponse::getEmail);
     }
 
     private Mono<Void> sendEmail(String email, String subject, String body) {

@@ -12,5 +12,5 @@ public interface NotificationService {
             String title,
             String message
     );
-
+   Mono<String> getAgentEmail(String agentId);
 }

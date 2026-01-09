@@ -87,7 +87,19 @@ register(payload: {
 getUserId(): string | null {
   return this.user?.sub ?? null;
 }
+forgotPassword(email: string) {
+  return this.http.post(
+    `${this.baseUrl}/forgot-password`,
+    { email }
+  );
+}
 
+resetPassword(token: string, password: string) {
+  return this.http.post(
+    `${this.baseUrl}/reset-password`,
+    { token, newPassword: password }
+  );
+}
   logout(): void {
     localStorage.clear();
     this.user = null;

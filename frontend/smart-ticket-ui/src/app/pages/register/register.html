@@ -1,3 +1,26 @@
+<!-- SUCCESS TOAST -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+  <div
+    #successToast
+    class="toast align-items-center text-bg-success border-0"
+    role="alert"
+    aria-live="assertive"
+    aria-atomic="true"
+  >
+    <div class="d-flex">
+      <div class="toast-body">
+        ✅ Registration successful. Redirecting to login…
+      </div>
+      <button
+        type="button"
+        class="btn-close btn-close-white me-2 m-auto"
+        data-bs-dismiss="toast"
+      ></button>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER FORM -->
 <div class="register-page d-flex align-items-center justify-content-center">
   <div class="card register-card shadow-lg">
 
@@ -22,7 +45,8 @@
           />
           <small
             class="text-danger"
-            *ngIf="registerForm.get('name')?.touched && registerForm.get('name')?.invalid">
+            *ngIf="registerForm.get('name')?.touched && registerForm.get('name')?.invalid"
+          >
             Minimum 3 characters required
           </small>
         </div>
@@ -37,12 +61,13 @@
           />
           <small
             class="text-danger"
-            *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.invalid">
+            *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.invalid"
+          >
             Valid email is required
           </small>
         </div>
 
-        <div class="mb-4">
+        <div class="mb-3">
           <label class="form-label">Password</label>
           <input
             type="password"
@@ -52,29 +77,38 @@
           />
           <small
             class="text-danger"
-            *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.invalid">
-            Minimum 8 characters required
+            *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.errors"
+          >
+            <span *ngIf="registerForm.get('password')?.errors?.['required']">
+              Password is required
+            </span>
+            <span *ngIf="registerForm.get('password')?.errors?.['minlength']">
+              Minimum 8 characters required
+            </span>
+            <span *ngIf="registerForm.get('password')?.errors?.['pattern']">
+              Must contain at least one special character
+            </span>
           </small>
         </div>
-<div class="mb-4">
-  <label class="form-label">Confirm Password</label>
-  <input
-    type="password"
-    class="form-control"
-    formControlName="confirmPassword"
-    placeholder="Re-enter password"
-  />
 
-  <small
-    class="text-danger"
-    *ngIf="
-      registerForm.hasError('passwordMismatch') &&
-      registerForm.get('confirmPassword')?.touched
-    "
-  >
-    Passwords do not match
-  </small>
-</div>
+        <div class="mb-4">
+          <label class="form-label">Confirm Password</label>
+          <input
+            type="password"
+            class="form-control"
+            formControlName="confirmPassword"
+            placeholder="Re-enter password"
+          />
+          <small
+            class="text-danger"
+            *ngIf="
+              registerForm.hasError('passwordMismatch') &&
+              registerForm.get('confirmPassword')?.touched
+            "
+          >
+            Passwords do not match
+          </small>
+        </div>
 
         <div class="alert alert-danger py-2" *ngIf="errorMessage">
           <i class="bi bi-exclamation-circle me-1"></i>
@@ -94,7 +128,7 @@
         </button>
       </form>
 
-      <div class="text-center mt-4">
+      <div class="text-center mt-3">
         <small class="text-muted">
           Already have an account?
           <a routerLink="/login" class="fw-semibold">Login</a>

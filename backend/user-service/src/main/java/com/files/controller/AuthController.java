@@ -44,7 +44,22 @@ public class AuthController {
             );
     }
 
-    
+    @PostMapping("/forgot-password")
+    public Mono<Void> forgotPassword(
+            @RequestBody ForgotPasswordRequest request) {
+        return authService.processForgotPassword(request.email());
+    }
+
+    @PostMapping("/reset-password")
+    public Mono<Void> resetPassword(
+            @RequestBody ResetPasswordRequest request) {
+        return authService.resetPassword(
+            request.token(),
+            request.newPassword()
+        );
+    }
+
+
     @PostMapping("/register-admin")
     public Mono<UserResponse> registerAdmin(
             @Valid @RequestBody RegisterRequest request) {

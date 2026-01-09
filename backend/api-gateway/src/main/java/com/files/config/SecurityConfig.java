@@ -62,7 +62,7 @@ public class SecurityConfig {
             	    .hasRole("MANAGER")
 
             	.pathMatchers("/ticket-service/tickets/*/reopen")
-            	    .hasAnyRole("MANAGER", "ADMIN")
+            	    .hasAnyRole("MANAGER", "USER")
 
             	.pathMatchers("/ticket-service/tickets/*/cancel")
             	    .hasAnyRole("USER", "ADMIN")

@@ -29,13 +29,18 @@ public class TicketAssignedListener {
             "Ticket ID: " + event.getTicketId() + "\n" +
             "Assigned at: " + event.getAssignedAt();
 
-        notificationService.notifyUser(
-            event.getAgentId(),
-            event.getAgentEmail(),
-            NotificationType.TICKET_ASSIGNED,
-            subject,
-            body
-        ).subscribe();
+        notificationService
+            .getAgentEmail(event.getAgentId())
+            .flatMap(email ->
+                notificationService.notifyUser(
+                    event.getAgentId(),
+                    email,
+                    NotificationType.TICKET_ASSIGNED,
+                    subject,
+                    body
+                )
+            )
+            .subscribe();
     }
 }
 

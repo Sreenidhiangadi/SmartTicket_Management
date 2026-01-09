@@ -15,18 +15,15 @@ class TicketMessagingEventsTest {
          TicketAssignedEvent e1 = new TicketAssignedEvent();
          e1.setTicketId("t1");
          e1.setAgentId("a1");
-         e1.setAgentEmail("agent@test.com");
          e1.setAssignedAt(now);
 
          TicketAssignedEvent e2 = new TicketAssignedEvent();
          e2.setTicketId("t1");
          e2.setAgentId("a1");
-         e2.setAgentEmail("agent@test.com");
          e2.setAssignedAt(now);
 
          assertEquals("t1", e1.getTicketId());
          assertEquals("a1", e1.getAgentId());
-         assertEquals("agent@test.com", e1.getAgentEmail());
          assertEquals(now, e1.getAssignedAt());
 
          assertEquals(e1, e2);

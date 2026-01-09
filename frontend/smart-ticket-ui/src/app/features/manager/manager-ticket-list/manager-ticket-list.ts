@@ -17,11 +17,9 @@ export class ManagerTicketListComponent implements OnInit {
   loading = false;
   error = '';
 
-  // filters
   status = '';
   priority = '';
 
-  // pagination
   page = 0;
   size = 10;
 

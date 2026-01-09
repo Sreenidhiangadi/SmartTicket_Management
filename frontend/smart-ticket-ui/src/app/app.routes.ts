@@ -18,13 +18,28 @@ import { AdminEscalationsComponent } from './features/escalation/admin-escalatio
 import { ManagerDashboardComponent } from './features/manager/manager-dashboard/manager-dashboard';
 import { ReportsComponent } from './features/reports/reports/reports';
 import { ProfileComponent } from './features/profile/profile';
+import { PublicHomeComponent } from './pages/public-home/public-home';
 export const routes: Routes = [
-  
+ 
+ 
   {
     path: '',
     component: HomeComponent,
     canActivate: [AuthGuard]
   },
+  {
+  path: 'forgot-password',
+  loadComponent: () =>
+    import('./pages/forgot-password/forgot-password')
+      .then(m => m.ForgotPasswordComponent)
+},
+{
+  path: 'reset-password',
+  loadComponent: () =>
+    import('./pages/reset-password/reset-password')
+      .then(m => m.ResetPasswordComponent)
+}
+,
  {
     path: 'profile',
     canActivate: [AuthGuard],

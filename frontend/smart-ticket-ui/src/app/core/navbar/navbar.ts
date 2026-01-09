@@ -25,6 +25,9 @@ export class NavbarComponent {
   hasRole(role: string): boolean {
     return this.auth.hasRole(role);
   }
+confirmLogout(): void {
+  this.logout();
+}
 
   goHome(): void {
     if (this.hasRole('ADMIN')) {

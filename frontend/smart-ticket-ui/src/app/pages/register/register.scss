@@ -5,35 +5,49 @@
 
 .register-card {
   width: 100%;
-  max-width: 420px;
-  border-radius: 14px;
+  max-width: 400px;        
+  border-radius: 12px;
   border: none;
   animation: fadeInUp 0.35s ease;
 }
 
+.card-body {
+  padding: 0.5rem !important;   
+}
+
 .auth-icon {
-  font-size: 2.6rem;
+  font-size: 2.3rem;          
   color: #0d6efd;
 }
 
+h4 {
+  font-size: 1.25rem;         
+}
+
 .form-control {
-  padding: 10px 12px;
-  border-radius: 8px;
+  padding: 8px 10px;            
+  border-radius: 7px;
+  font-size: 0.9rem;
 }
 
 .form-control:focus {
-  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+  box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15);
 }
 
 button.btn {
-  padding: 10px;
+  padding: 9px;
   font-weight: 600;
+  font-size: 0.95rem;
+}
+
+small {
+  font-size: 0.75rem;          
 }
 
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;

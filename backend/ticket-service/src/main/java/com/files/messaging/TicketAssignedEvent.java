@@ -6,6 +6,5 @@ import java.time.Instant;
 public class TicketAssignedEvent {
     private String ticketId;
     private String agentId;
-    private String agentEmail;
     private Instant assignedAt;
 }

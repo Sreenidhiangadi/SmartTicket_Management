@@ -94,7 +94,6 @@ public class TicketServiceImpl implements TicketService {
 											TicketAssignedEvent event = new TicketAssignedEvent();
 											event.setTicketId(updated.getId());
 											event.setAgentId(updated.getAssignedTo());
-											event.setAgentEmail(resp.getAgentEmail());
 											event.setAssignedAt(Instant.now());
 
 											kafkaTemplate.send("ticket-assigned-events", updated.getId(), event);
