@@ -1,0 +1,114 @@
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/Sreenidhiangadi/SmartTicket_Management_Backend.git'
+            }
+        }
+
+        stage('Verify Environment') {
+            steps {
+                bat 'java -version'
+                bat 'mvn -version'
+                bat 'docker --version'
+                bat 'docker compose version'
+            }
+        }
+
+        stage('Build Microservices') {
+            parallel {
+
+                stage('API Gateway') {
+                    steps {
+                        dir('backend/api-gateway') {
+                            bat 'mvn package'
+                        }
+                    }
+                }
+
+                stage('Assignment Service') {
+                    steps {
+                        dir('backend/assignment-service') {
+                            bat 'mvn package'
+                        }
+                    }
+                }
+
+                stage('Config Server') {
+                    steps {
+                        dir('backend/config-server') {
+                            bat 'mvn package'
+                        }
+                    }
+                }
+
+                stage('Eureka Server') {
+                    steps {
+                        dir('backend/eureka-server') {
+                            bat 'mvn package'
+                        }
+                    }
+                }
+
+                stage('Notification Service') {
+                    steps {
+                        dir('backend/notification-service') {
+                            bat 'mvn package'
+                        }
+                    }
+                }
+
+                stage('Ticket Service') {
+                    steps {
+                        dir('backend/ticket-service') {
+                            bat 'mvn package'
+                        }
+                    }
+                }
+
+                stage('User Service') {
+                    steps {
+                        dir('backend/user-service') {
+                            bat 'mvn package'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Docker Build Images') {
+            steps {
+                dir('backend') {
+                    bat 'docker compose build'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                dir('backend') {
+                    bat 'docker compose down'
+                    bat 'docker compose up -d'
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'SmartTicket backend deployed successfully'
+        }
+        failure {
+            echo 'Pipeline failed. Check logs.'
+        }
+    }
+}
