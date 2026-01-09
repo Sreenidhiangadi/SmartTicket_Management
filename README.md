@@ -18,6 +18,7 @@ This project implements a full ticket lifecycle used by support teams:
 The architecture follows microservice principles with event-driven communication using Kafka.
 
 config server : https://github.com/Sreenidhiangadi/ticket-config-repo
+frontend-deployment link: https://smart-ticket-managment-system.netlify.app/login
 ---
 
 ## Architecture
@@ -277,3 +278,54 @@ Primary collection used by the Ticket Service.
 - `updatedAt`
 - `resolvedAt`
 - `closedAt`
+
+### UI Screenshots
+1)User Register(Validations):
+<img width="940" height="479" alt="image" src="https://github.com/user-attachments/assets/ad607297-70ea-447f-abbe-adfa0ebf9d54" />
+<br>
+2)User Register(Successful):
+<img width="940" height="466" alt="image" src="https://github.com/user-attachments/assets/7c81c5e2-7b4e-4a40-800e-439c3a359f97" />
+<br>
+3)User login(Validations):
+<img width="940" height="474" alt="image" src="https://github.com/user-attachments/assets/fe3b9b93-7cf9-4075-805b-faf60d3c5c2e" />
+<br>
+4)User Login (Successful):
+<img width="940" height="470" alt="image" src="https://github.com/user-attachments/assets/3c9254e6-804c-4008-b9ff-192f96933428" />
+<br>
+5)Home Page:
+<img width="940" height="454" alt="image" src="https://github.com/user-attachments/assets/4d2c32cd-e70f-4115-820b-36f7db7d5a5f" />
+<br>
+6)User raise ticket:
+<img width="940" height="456" alt="image" src="https://github.com/user-attachments/assets/bd33f09d-1b01-4c08-9ef5-fbfba01ec13b" />
+<br>
+7)Ticket details:
+<img width="940" height="427" alt="image" src="https://github.com/user-attachments/assets/67f43a05-7048-42ba-8581-1c46b8f97bfe" />
+<br>
+8)Agent Queue:
+<img width="940" height="467" alt="image" src="https://github.com/user-attachments/assets/0681863c-57ee-406f-895a-3ceb3ac753eb" />
+<br>
+9)Manager Dashboard:
+<img width="1919" height="932" alt="image" src="https://github.com/user-attachments/assets/b6d57f49-5571-4e78-9392-e734ee7f814b" />
+<br>
+10)Manager Actions(Reassigning):
+<img width="940" height="470" alt="image" src="https://github.com/user-attachments/assets/229a7428-44e6-4502-a3cb-62cbec2ee2f3" />
+<br>
+11)Reports and Analytics:
+<img width="1913" height="883" alt="image" src="https://github.com/user-attachments/assets/70d844bb-c9c7-4bde-881c-03c1d160289d" />
+<br>
+12)Admin Panel:
+<img width="1919" height="905" alt="image" src="https://github.com/user-attachments/assets/9a0e07fc-de18-4020-a59b-3f6e8b4bcc7a" />
+<br>
+
+
+
+
+
+
+
+
+
+
+
+
+
